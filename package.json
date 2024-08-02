@@ -54,6 +54,7 @@
   "dependencies": {
     "@kilbergr/pg-sql": "^0.1.0-Dev.5",
     "@kilbergr/tagged-types": "^0.1.0-Alpha.3",
+    "class-transformer": "^0.5.1",
     "pg": "^8.12.0",
     "rxjs": "^7.8.1"
   },

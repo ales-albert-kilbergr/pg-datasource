@@ -5,13 +5,374 @@ import {
   catchDatabaseError,
   catchDuplicateTableError,
   catchUndefinedTableError,
+  transformKeysToCamelCase,
+  transformToInstance,
 } from './operators';
-import { throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
+import { QueryResult } from './query-result';
+import { mock } from 'jest-mock-extended';
+import type { QueryConfig } from '@kilbergr/pg-sql';
 
 // https://medium.com/@bencabanes/marble-testing-observable-introduction-1f5ad39231c
 describe('(Unit) Operators', () => {
   // eslint-disable-next-line @typescript-eslint/init-declarations
   let testScheduler: TestScheduler;
+
+  describe('transformKeysToCamelCase', () => {
+    beforeEach(() => {
+      testScheduler = new TestScheduler((actual, expected) => {
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    it('should transform keys to camel case', () => {
+      testScheduler.run(({ expectObservable }) => {
+        // Arrange
+        const expectedMarbles = '(a|)';
+        const input = [
+          {
+            first_name: 'John',
+            last_name: 'Doe',
+            email_address: 'john.doe@example.com',
+          },
+        ];
+        const expectedOutput = [
+          {
+            firstName: 'John',
+            lastName: 'Doe',
+            emailAddress: 'john.doe@example.com',
+          },
+        ];
+        // Act
+        const result$ = of(input).pipe(transformKeysToCamelCase());
+        // Assert
+        expectObservable(result$).toBe(expectedMarbles, { a: expectedOutput });
+      });
+    });
+
+    it('should transform keys to camel case for multiple objects', () => {
+      testScheduler.run(({ expectObservable }) => {
+        // Arrange
+        const expectedMarbles = '(a|)';
+        const input = [
+          {
+            first_name: 'John',
+            last_name: 'Doe',
+            email_address: 'john.doe@example.com',
+          },
+          {
+            first_name: 'Jane',
+            last_name: 'Doe',
+            email_address: 'jane.doe@example.com',
+          },
+        ];
+        const expectedOutput = [
+          {
+            firstName: 'John',
+            lastName: 'Doe',
+            emailAddress: 'john.doe@example.com',
+          },
+          {
+            firstName: 'Jane',
+            lastName: 'Doe',
+            emailAddress: 'jane.doe@example.com',
+          },
+        ];
+
+        // Act
+        const result$ = of(input).pipe(transformKeysToCamelCase());
+
+        // Assert
+        expectObservable(result$).toBe(expectedMarbles, { a: expectedOutput });
+      });
+    });
+
+    it('should extract the object out of the query result structure', () => {
+      testScheduler.run(({ expectObservable }) => {
+        // Arrange
+        const expectedMarbles = '(a|)';
+        const input = new QueryResult(mock<QueryConfig>());
+        input.result = {
+          command: 'SELECT',
+          rowCount: 1,
+          oid: 0,
+          fields: [],
+          rows: [
+            {
+              first_name: 'John',
+              last_name: 'Doe',
+              email_address: 'john.doe@example.com',
+            },
+          ],
+        };
+        const expectedOutput = [
+          {
+            firstName: 'John',
+            lastName: 'Doe',
+            emailAddress: 'john.doe@example.com',
+          },
+        ];
+
+        // Act
+        const result$ = of(input).pipe(transformKeysToCamelCase());
+
+        // Assert
+        expectObservable(result$).toBe(expectedMarbles, { a: expectedOutput });
+      });
+    });
+
+    it('should ignore nested fields', () => {
+      testScheduler.run(({ expectObservable }) => {
+        // Arrange
+        const expectedMarbles = '(a|)';
+        const input = [
+          {
+            first_name: 'John',
+            last_name: 'Doe',
+            email_address: 'john.doe@example.com',
+            address: {
+              street_address: '123 Main St',
+              city: 'Anytown',
+              state: 'NY',
+              postal_code: '12345',
+            },
+          },
+        ];
+        const expectedOutput = [
+          {
+            firstName: 'John',
+            lastName: 'Doe',
+            emailAddress: 'john.doe@example.com',
+            address: {
+              street_address: '123 Main St',
+              city: 'Anytown',
+              state: 'NY',
+              postal_code: '12345',
+            },
+          },
+        ];
+
+        // Act
+        const result$ = of(input).pipe(transformKeysToCamelCase());
+        // Assert
+        expectObservable(result$).toBe(expectedMarbles, { a: expectedOutput });
+      });
+    });
+  });
+
+  describe('transformToInstance', () => {
+    it('should transform a plain object to an instance of a class', () => {
+      // Arrange
+      class Person {
+        public firstName!: string;
+        public lastName!: string;
+        public emailAddress!: string;
+      }
+
+      const input = [
+        {
+          firstName: 'John',
+          lastName: 'Doe',
+          emailAddress: 'john.doe@example.com',
+        },
+      ];
+
+      const expectedOutput = new Person();
+      expectedOutput.firstName = 'John';
+      expectedOutput.lastName = 'Doe';
+      expectedOutput.emailAddress = 'john.doe@example.com';
+
+      // Act
+      const result = of(input).pipe(transformToInstance(Person));
+      // Assert
+      result.subscribe((value: any) => {
+        expect(value[0]).toBeInstanceOf(Person);
+        expect(value[0]).toEqual(expectedOutput);
+      });
+    });
+
+    it('should transform multiple plain objects to instances of a class', () => {
+      // Arrange
+      class Person {
+        public firstName!: string;
+        public lastName!: string;
+        public emailAddress!: string;
+      }
+
+      const input = [
+        {
+          firstName: 'John',
+          lastName: 'Doe',
+          emailAddress: 'john.doe@example.com',
+        },
+        {
+          firstName: 'Jane',
+          lastName: 'Doe',
+          emailAddress: 'jane.doe@example.com',
+        },
+      ];
+
+      const expectedOutput1 = new Person();
+      expectedOutput1.firstName = 'John';
+      expectedOutput1.lastName = 'Doe';
+      expectedOutput1.emailAddress = 'john.doe@example.com';
+
+      const expectedOutput2 = new Person();
+      expectedOutput2.firstName = 'Jane';
+      expectedOutput2.lastName = 'Doe';
+      expectedOutput2.emailAddress = 'jane.doe@example.com';
+
+      // Act
+      const result = of(input).pipe(transformToInstance(Person));
+      // Assert
+      result.subscribe((value: any) => {
+        expect(value[0]).toBeInstanceOf(Person);
+        expect(value[0]).toEqual(expectedOutput1);
+        expect(value[1]).toBeInstanceOf(Person);
+        expect(value[1]).toEqual(expectedOutput2);
+      });
+    });
+
+    it('should extract the object out of the query result structure', () => {
+      // Arrange
+      class Person {
+        public firstName!: string;
+        public lastName!: string;
+        public emailAddress!: string;
+      }
+
+      const input = new QueryResult(mock<QueryConfig>());
+      input.result = {
+        command: 'SELECT',
+        rowCount: 1,
+        oid: 0,
+        fields: [],
+        rows: [
+          {
+            firstName: 'John',
+            lastName: 'Doe',
+            emailAddress: 'john.doe@example.com',
+          },
+        ],
+      };
+
+      const expectedOutput = new Person();
+      expectedOutput.firstName = 'John';
+      expectedOutput.lastName = 'Doe';
+      expectedOutput.emailAddress = 'john.doe@example.com';
+
+      // Act
+      const result = of(input).pipe(transformToInstance(Person));
+
+      // Assert
+      result.subscribe((value: any) => {
+        expect(value[0]).toBeInstanceOf(Person);
+        expect(value[0]).toEqual(expectedOutput);
+      });
+    });
+
+    it('should extract multiple objects out of the query result structure', () => {
+      // Arrange
+      class Person {
+        public firstName!: string;
+        public lastName!: string;
+        public emailAddress!: string;
+      }
+
+      const input = new QueryResult(mock<QueryConfig>());
+      input.result = {
+        command: 'SELECT',
+        rowCount: 2,
+        oid: 0,
+        fields: [],
+        rows: [
+          {
+            firstName: 'John',
+            lastName: 'Doe',
+            emailAddress: 'john.doe@example.com',
+          },
+          {
+            firstName: 'Jane',
+            lastName: 'Doe',
+            emailAddress: 'jane.doe@example.com',
+          },
+        ],
+      };
+
+      const expectedOutput1 = new Person();
+      expectedOutput1.firstName = 'John';
+      expectedOutput1.lastName = 'Doe';
+      expectedOutput1.emailAddress = 'john.doe@example.com';
+
+      const expectedOutput2 = new Person();
+      expectedOutput2.firstName = 'Jane';
+      expectedOutput2.lastName = 'Doe';
+      expectedOutput2.emailAddress = 'jane.doe@example.com';
+
+      // Act
+      const result = of(input).pipe(transformToInstance(Person));
+
+      // Assert
+      result.subscribe((value: any) => {
+        expect(value[0]).toBeInstanceOf(Person);
+        expect(value[0]).toEqual(expectedOutput1);
+        expect(value[1]).toBeInstanceOf(Person);
+        expect(value[1]).toEqual(expectedOutput2);
+      });
+    });
+
+    it('should transform an object from a previous operator to an instance of a class', () => {
+      // Arrange
+      class Person {
+        public firstName!: string;
+        public lastName!: string;
+        public emailAddress!: string;
+      }
+      const input = new QueryResult(mock<QueryConfig>());
+      input.result = {
+        command: 'SELECT',
+        rowCount: 2,
+        oid: 0,
+        fields: [],
+        rows: [
+          {
+            firstName: 'John',
+            lastName: 'Doe',
+            emailAddress: 'john.doe@example.com',
+          },
+          {
+            firstName: 'Jane',
+            lastName: 'Doe',
+            emailAddress: 'jane.doe@example.com',
+          },
+        ],
+      };
+
+      const expectedOutput1 = new Person();
+      expectedOutput1.firstName = 'John';
+      expectedOutput1.lastName = 'Doe';
+      expectedOutput1.emailAddress = 'john.doe@example.com';
+
+      const expectedOutput2 = new Person();
+      expectedOutput2.firstName = 'Jane';
+      expectedOutput2.lastName = 'Doe';
+      expectedOutput2.emailAddress = 'jane.doe@example.com';
+
+      // Act
+      const result = of(input).pipe(
+        transformKeysToCamelCase(),
+        transformToInstance(Person),
+      );
+
+      // Assert
+      result.subscribe((value: any) => {
+        expect(value[0]).toBeInstanceOf(Person);
+        expect(value[0]).toEqual(expectedOutput1);
+        expect(value[1]).toBeInstanceOf(Person);
+        expect(value[1]).toEqual(expectedOutput2);
+      });
+    });
+  });
 
   describe('catchDatabaseError', () => {
     beforeEach(() => {

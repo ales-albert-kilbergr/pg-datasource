@@ -1,11 +1,12 @@
 import type { QueryConfig } from '@kilbergr/pg-sql';
-import type { QueryStats } from './query-stats';
+import { QueryStats } from './query-stats';
+import type { QueryResult as PgQueryResult, QueryResultRow } from 'pg';
 
-export class QueryResult<R> {
+export class QueryResult<R extends QueryResultRow = QueryResultRow> {
   /**
    * Query execution statistics.
    */
-  public stats!: QueryStats;
+  public stats = new QueryStats();
   /**
    * The original query config which was used to execute the query
    */
@@ -15,5 +16,9 @@ export class QueryResult<R> {
    * mappers and reducers were used. By default it will be the raw result
    * from the database.
    */
-  public result!: R;
+  public result!: PgQueryResult<R>;
+
+  public constructor(queryConfig: QueryConfig) {
+    this.config = queryConfig;
+  }
 }

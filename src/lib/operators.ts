@@ -1,5 +1,60 @@
-import { DatabaseError } from 'pg';
-import { catchError, of } from 'rxjs';
+import { DatabaseError, type QueryResultRow } from 'pg';
+import { catchError, map, of, type OperatorFunction } from 'rxjs';
+import { QueryResult } from './query-result';
+import type { Class } from 'type-fest';
+import { plainToInstance, type ClassTransformOptions } from 'class-transformer';
+
+function toCamelCase(str: string): string {
+  return str.replace(/([-_][a-z])/gi, (match) => {
+    return match.toUpperCase().replace('-', '').replace('_', '');
+  });
+}
+
+export function transformKeysToCamelCase<
+  R extends QueryResultRow,
+>(): OperatorFunction<QueryResult | QueryResultRow[], R[]> {
+  return map((input: QueryResult | QueryResultRow[]): R[] => {
+    const rows = Array.isArray(input) ? input : input.result.rows;
+
+    return rows.map((row) =>
+      Object.keys(row).reduce((acc, key) => {
+        (acc as QueryResultRow)[toCamelCase(key)] = row[key];
+        return acc;
+      }, {}),
+    ) as R[];
+  });
+}
+
+export function transformToInstance<T>(
+  Constructor: Class<T>,
+  options?: ClassTransformOptions,
+): OperatorFunction<QueryResult | QueryResultRow[], T | T[]> {
+  return map(
+    (
+      input: QueryResult | QueryResultRow[] | QueryResultRow | null | undefined,
+    ): T | T[] => {
+      if (input === undefined || input === null) return input as unknown as T;
+      if (Array.isArray(input)) {
+        return (
+          input.length > 0 ? plainToInstance(Constructor, input, options) : []
+        ) as T[];
+      } else if (input instanceof QueryResult) {
+        return (
+          Array.isArray(input.result.rows) && input.result.rows.length > 0
+            ? plainToInstance(Constructor, input.result.rows, options)
+            : []
+        ) as T[];
+      } else if (typeof input === 'object') {
+        return plainToInstance(Constructor, input, options) as T;
+      } else {
+        throw new TypeError(
+          `Cannot transform ${typeof input} into ${Constructor.name}! ` +
+            `Expected an object or array of objects, but received ${typeof input}`,
+        );
+      }
+    },
+  );
+}
 
 export type DatabaseErrorHandler<R = unknown> = (
   error: DatabaseError,

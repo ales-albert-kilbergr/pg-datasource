@@ -1,7 +1,6 @@
-import type { Pool } from 'pg';
+import type { Pool, QueryResultRow } from 'pg';
 import { QueryConfig } from '@kilbergr/pg-sql';
 import { QueryResult } from './query-result';
-import { QueryStats } from './query-stats';
 import { TransactionRunner } from './transaction-runner';
 import type { QueryLogger } from './query-logger';
 import { from, type Observable } from 'rxjs';
@@ -68,39 +67,34 @@ export class QueryRunner {
     this.transaction = undefined;
   }
 
-  public observe<R>(
+  public observe<R extends QueryResultRow>(
     queryConfig: string | QueryConfig,
   ): Observable<QueryResult<R>> {
     return from(this.query<R>(queryConfig));
   }
 
-  public async query<R>(
+  public async query<R extends QueryResultRow>(
     queryConfig: string | QueryConfig,
   ): Promise<QueryResult<R>> {
     const queryConfigObj =
       typeof queryConfig === 'string'
         ? new QueryConfig(queryConfig)
         : queryConfig;
-    const queryStats = new QueryStats();
+    const result = new QueryResult<R>(queryConfigObj);
     const connectionStartTime = process.hrtime.bigint();
     // If the query runner is in the middle of a transaction the
     // client is already set and we don't need to connect to the pool.
     const client = this.transaction?.client ?? (await this.pool.connect());
-    queryStats.connectionDuration =
+    result.stats.connectionDuration =
       QueryRunner.getDurationInMilliseconds(connectionStartTime);
     const queryStartTime = process.hrtime.bigint();
 
     try {
-      const queryResult = await client.query(queryConfigObj);
+      result.result = await client.query<R>(queryConfigObj);
 
-      queryStats.executionDuration =
+      result.stats.executionDuration =
         QueryRunner.getDurationInMilliseconds(queryStartTime);
-      queryStats.rowCount = queryResult.rowCount ?? 0;
-
-      const result = new QueryResult<R>();
-      result.stats = queryStats;
-      result.result = queryResult as R;
-      result.config = queryConfigObj;
+      result.stats.rowCount = result.result.rowCount ?? 0;
 
       if (this.transaction) {
         this.transaction.stats.queryCount =

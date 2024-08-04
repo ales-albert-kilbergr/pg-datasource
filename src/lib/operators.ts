@@ -10,19 +10,25 @@ function toCamelCase(str: string): string {
   });
 }
 
-export function transformKeysToCamelCase<
-  R extends QueryResultRow,
->(): OperatorFunction<QueryResult | QueryResultRow[], R[]> {
+export function transformKeys<R extends QueryResultRow>(
+  transformFn: (key: string) => string,
+): OperatorFunction<QueryResult | QueryResultRow[], R[]> {
   return map((input: QueryResult | QueryResultRow[]): R[] => {
     const rows = Array.isArray(input) ? input : input.result.rows;
 
     return rows.map((row) =>
       Object.keys(row).reduce((acc, key) => {
-        (acc as QueryResultRow)[toCamelCase(key)] = row[key];
+        (acc as QueryResultRow)[transformFn(key)] = row[key];
         return acc;
       }, {}),
     ) as R[];
   });
+}
+
+export function transformKeysToCamelCase<
+  R extends QueryResultRow,
+>(): OperatorFunction<QueryResult | QueryResultRow[], R[]> {
+  return transformKeys<R>(toCamelCase);
 }
 
 export function transformToInstance<T>(
@@ -35,23 +41,41 @@ export function transformToInstance<T>(
     ): T | T[] => {
       if (input === undefined || input === null) return input as unknown as T;
       if (Array.isArray(input)) {
-        return (
-          input.length > 0 ? plainToInstance(Constructor, input, options) : []
-        ) as T[];
+        return input.length > 0
+          ? plainToInstance(Constructor, input, options)
+          : [];
       } else if (input instanceof QueryResult) {
-        return (
-          Array.isArray(input.result.rows) && input.result.rows.length > 0
-            ? plainToInstance(Constructor, input.result.rows, options)
-            : []
-        ) as T[];
+        return Array.isArray(input.result.rows) && input.result.rows.length > 0
+          ? plainToInstance(Constructor, input.result.rows, options)
+          : [];
       } else if (typeof input === 'object') {
-        return plainToInstance(Constructor, input, options) as T;
+        return plainToInstance(Constructor, input, options);
       } else {
         throw new TypeError(
           `Cannot transform ${typeof input} into ${Constructor.name}! ` +
             `Expected an object or array of objects, but received ${typeof input}`,
         );
       }
+    },
+  );
+}
+
+/**
+ * Reduce a query result to a single field per row
+ */
+export function reduceToColumn<T>(
+  fieldName: string,
+  transformFn?: (value: unknown) => T,
+): OperatorFunction<QueryResult | QueryResultRow[] | null | undefined, T[]> {
+  return map(
+    (input: QueryResult | QueryResultRow[] | null | undefined): T[] => {
+      if (!input) return [];
+
+      const rows = input instanceof QueryResult ? input.result.rows : input;
+
+      return rows.map<T>((row) =>
+        transformFn ? transformFn(row[fieldName]) : (row[fieldName] as T),
+      );
     },
   );
 }

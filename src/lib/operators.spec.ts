@@ -5,6 +5,7 @@ import {
   catchDatabaseError,
   catchDuplicateTableError,
   catchUndefinedTableError,
+  reduceToColumn,
   transformKeysToCamelCase,
   transformToInstance,
 } from './operators';
@@ -370,6 +371,133 @@ describe('(Unit) Operators', () => {
         expect(value[0]).toEqual(expectedOutput1);
         expect(value[1]).toBeInstanceOf(Person);
         expect(value[1]).toEqual(expectedOutput2);
+      });
+    });
+  });
+
+  describe('reduceToColumn', () => {
+    beforeEach(() => {
+      testScheduler = new TestScheduler((actual, expected) => {
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    it('should pick a selected column from a query result and return it as an array', () => {
+      testScheduler.run(({ expectObservable }) => {
+        // Arrange
+        const input = new QueryResult(mock<QueryConfig>());
+        input.result = {
+          command: 'SELECT',
+          rowCount: 2,
+          oid: 0,
+          fields: [],
+          rows: [
+            {
+              firstName: 'John',
+              lastName: 'Doe',
+            },
+            {
+              firstName: 'Jane',
+              lastName: 'Doe',
+            },
+          ],
+        };
+
+        const expectedOutput = ['John', 'Jane'];
+
+        // Act
+        const result$ = of(input).pipe(reduceToColumn('firstName'));
+
+        // Assert
+        expectObservable(result$).toBe('(a|)', { a: expectedOutput });
+      });
+    });
+
+    it('should return an empty array if the input is undefined', () => {
+      testScheduler.run(({ expectObservable }) => {
+        // Arrange
+        const input = undefined;
+        const expectedOutput: string[] = [];
+
+        // Act
+        const result$ = of(input).pipe(reduceToColumn('firstName'));
+
+        // Assert
+        expectObservable(result$).toBe('(a|)', { a: expectedOutput });
+      });
+    });
+
+    it('should pick the column from a query result rows', () => {
+      testScheduler.run(({ expectObservable }) => {
+        // Arrange
+        const input = [
+          {
+            firstName: 'John',
+            lastName: 'Doe',
+          },
+          {
+            firstName: 'Jane',
+            lastName: 'Doe',
+          },
+        ];
+
+        const expectedOutput = ['John', 'Jane'];
+
+        // Act
+        const result$ = of(input).pipe(reduceToColumn('firstName'));
+
+        // Assert
+        expectObservable(result$).toBe('(a|)', { a: expectedOutput });
+      });
+    });
+
+    it('should apply the transformation operator on a column value', () => {
+      testScheduler.run(({ expectObservable }) => {
+        // Arrange
+        const input = [
+          {
+            firstName: 'John',
+            lastName: 'Doe',
+          },
+          {
+            firstName: 'Jane',
+            lastName: 'Doe',
+          },
+        ];
+
+        const expectedOutput = ['john', 'jane'];
+
+        // Act
+        const result$ = of(input).pipe(
+          reduceToColumn('firstName', (value) => String(value).toLowerCase()),
+        );
+
+        // Assert
+        expectObservable(result$).toBe('(a|)', { a: expectedOutput });
+      });
+    });
+
+    it('should return an empty array if the column does not exist', () => {
+      testScheduler.run(({ expectObservable }) => {
+        // Arrange
+        const input = [
+          {
+            firstName: 'John',
+            lastName: 'Doe',
+          },
+          {
+            firstName: 'Jane',
+            lastName: 'Doe',
+          },
+        ];
+
+        const expectedOutput: string[] = [];
+
+        // Act
+        const result$ = of(input).pipe(reduceToColumn('middleName'));
+
+        // Assert
+        expectObservable(result$).toBe('(a|)', { a: expectedOutput });
       });
     });
   });

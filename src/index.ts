@@ -7,3 +7,4 @@ export * from './lib/query-runner';
 export * from './lib/transaction-stats';
 export * from './lib/repository';
 export * from './lib/operators';
+export * from './lib/advisory-lock';

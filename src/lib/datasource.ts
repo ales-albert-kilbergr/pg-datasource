@@ -2,6 +2,7 @@ import type { Pool } from 'pg';
 import { QueryRunner } from './query-runner';
 import type { QueryLogger } from './query-logger';
 import { sql } from '@kilbergr/pg-sql';
+import { AdvisoryLock } from './advisory-lock';
 
 export class Datasource {
   public readonly pool: Pool;
@@ -68,5 +69,13 @@ export class Datasource {
     const result = await this.pool.query(query);
 
     return result.rows[0].exists === true;
+  }
+
+  public async createAdvisoryLock(lockId: number): Promise<AdvisoryLock> {
+    const lock = new AdvisoryLock(this);
+
+    await lock.lock(lockId);
+
+    return lock;
   }
 }

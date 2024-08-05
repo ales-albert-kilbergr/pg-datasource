@@ -71,11 +71,7 @@ export class Datasource {
     return result.rows[0].exists === true;
   }
 
-  public async obtainAdvisoryLock(lockId: number): Promise<AdvisoryLock> {
-    const lock = new AdvisoryLock(this);
-
-    await lock.lock(lockId);
-
-    return lock;
+  public createAdvisorLock(lockId: number): AdvisoryLock {
+    return new AdvisoryLock(this, lockId);
   }
 }

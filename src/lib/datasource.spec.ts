@@ -59,14 +59,14 @@ describe('(Unit) Datasource', () => {
     });
   });
 
-  describe('obtainAdvisoryLock', () => {
-    it('should return a new AdvisoryLock', async () => {
+  describe('createAdvisoryLock', () => {
+    it('should return a new AdvisoryLock', () => {
       // Arrange
       const pool = mock<Pool>();
       const logger = mock<DatasourceLogger>();
       const datasource = new Datasource('test', pool, logger);
       // Act
-      const result = await datasource.obtainAdvisoryLock(1);
+      const result = datasource.createAdvisorLock(1);
       // Assert
       expect(result).toBeInstanceOf(AdvisoryLock);
     });

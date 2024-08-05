@@ -14,6 +14,8 @@ export class AdvisoryLock {
     `;
 
     await this.datasource.pool.query(queryConfig);
+
+    this.datasource.logger.logAdvisoryLock(lockId);
   }
 
   public async unlock(lockId: number): Promise<void> {
@@ -22,5 +24,7 @@ export class AdvisoryLock {
     `;
 
     await this.datasource.pool.query(queryConfig);
+
+    this.datasource.logger.logAdvisoryUnlock(lockId);
   }
 }

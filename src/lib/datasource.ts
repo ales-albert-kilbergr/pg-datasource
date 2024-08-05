@@ -1,17 +1,17 @@
 import type { Pool } from 'pg';
 import { QueryRunner } from './query-runner';
-import type { QueryLogger } from './query-logger';
 import { sql } from '@kilbergr/pg-sql';
 import { AdvisoryLock } from './advisory-lock';
+import type { DatasourceLogger } from './datasource-logger';
 
 export class Datasource {
   public readonly pool: Pool;
 
   public readonly name: string;
 
-  private readonly logger: QueryLogger;
+  public readonly logger: DatasourceLogger;
 
-  public constructor(name: string, pool: Pool, logger: QueryLogger) {
+  public constructor(name: string, pool: Pool, logger: DatasourceLogger) {
     this.name = name;
     this.pool = pool;
     this.logger = logger;
@@ -71,7 +71,7 @@ export class Datasource {
     return result.rows[0].exists === true;
   }
 
-  public async createAdvisoryLock(lockId: number): Promise<AdvisoryLock> {
+  public async obtainAdvisoryLock(lockId: number): Promise<AdvisoryLock> {
     const lock = new AdvisoryLock(this);
 
     await lock.lock(lockId);

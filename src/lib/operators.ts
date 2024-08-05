@@ -55,6 +55,29 @@ export function transformToInstance<T>(
   );
 }
 
+export function pickFirst<T>(): OperatorFunction<
+  QueryResult | QueryResultRow[] | T[] | T,
+  T | undefined | null
+> {
+  return map(
+    (
+      input: QueryResult | QueryResultRow[] | T[] | T | null | undefined,
+    ): T | undefined | null => {
+      if (input === undefined || input === null) {
+        return input;
+      }
+
+      if (input instanceof QueryResult) {
+        return input.result.rows[0] as T;
+      } else if (Array.isArray(input)) {
+        return input[0] as T;
+      } else {
+        return input;
+      }
+    },
+  );
+}
+
 /**
  * Reduce a query result to a single field per row
  */

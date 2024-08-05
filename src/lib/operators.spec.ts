@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-destructuring */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { TestScheduler } from 'rxjs/testing';
@@ -6,6 +7,7 @@ import {
   catchDatabaseError,
   catchDuplicateTableError,
   catchUndefinedTableError,
+  pickFirst,
   reduceToColumn,
   transformKeysToCamelCase,
   transformToInstance,
@@ -19,6 +21,97 @@ import type { QueryConfig } from '@kilbergr/pg-sql';
 describe('(Unit) Operators', () => {
   // eslint-disable-next-line @typescript-eslint/init-declarations
   let testScheduler: TestScheduler;
+
+  describe('pickFirst', () => {
+    beforeEach(() => {
+      testScheduler = new TestScheduler((actual, expected) => {
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    it('should pick the first value from an array of query result rows', () => {
+      testScheduler.run(({ expectObservable }) => {
+        // Arrange
+        const expectedMarbles = '(a|)';
+        const input = [
+          {
+            first_name: 'John',
+            last_name: 'Doe',
+          },
+          {
+            first_name: 'Jane',
+            last_name: 'Doe',
+          },
+        ];
+        const expectedOutput = input[0];
+        // Act
+        const result$ = of(input).pipe(pickFirst());
+        // Assert
+        expectObservable(result$).toBe(expectedMarbles, { a: expectedOutput });
+      });
+    });
+
+    it('should pick the first value from a query result', () => {
+      testScheduler.run(({ expectObservable }) => {
+        // Arrange
+        const expectedMarbles = '(a|)';
+        const input = new QueryResult(mock<QueryConfig>());
+        input.result = {
+          command: 'SELECT',
+          rowCount: 2,
+          oid: 0,
+          fields: [],
+          rows: [
+            {
+              first_name: 'John',
+              last_name: 'Doe',
+            },
+            {
+              first_name: 'Jane',
+              last_name: 'Doe',
+            },
+          ],
+        };
+        const expectedOutput = input.result.rows[0];
+        // Act
+        const result$ = of(input).pipe(pickFirst());
+        // Assert
+        expectObservable(result$).toBe(expectedMarbles, {
+          a: expectedOutput,
+        });
+      });
+    });
+
+    it('should pass null if it arrives in the input', () => {
+      testScheduler.run(({ expectObservable }) => {
+        // Arrange
+        const expectedMarbles = '(a|)';
+        const input = null;
+        const expectedOutput = null;
+        // Act
+        const result$ = of(input).pipe(pickFirst());
+        // Assert
+        expectObservable(result$).toBe(expectedMarbles, {
+          a: expectedOutput,
+        });
+      });
+    });
+
+    it('should pass undefined if it arrives in the input', () => {
+      testScheduler.run(({ expectObservable }) => {
+        // Arrange
+        const expectedMarbles = '(a|)';
+        const input = undefined;
+        const expectedOutput = undefined;
+        // Act
+        const result$ = of(input).pipe(pickFirst());
+        // Assert
+        expectObservable(result$).toBe(expectedMarbles, {
+          a: expectedOutput,
+        });
+      });
+    });
+  });
 
   describe('transformKeysToCamelCase', () => {
     beforeEach(() => {

@@ -15,7 +15,7 @@ export class Datasource {
     this.logger = logger;
   }
 
-  public getPgPool(): Pool {
+  public getPool(): Pool {
     return this.pool;
   }
 

@@ -1,9 +1,12 @@
 import type { QueryRunner } from './query-runner';
 
-export class Repository {
+export class Repository<C = unknown> {
   protected queryRunner: QueryRunner;
 
-  public constructor(queryRunner: QueryRunner) {
+  protected readonly config: C;
+
+  public constructor(queryRunner: QueryRunner, config: C) {
     this.queryRunner = queryRunner;
+    this.config = config;
   }
 }

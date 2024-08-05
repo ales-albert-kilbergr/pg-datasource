@@ -18,7 +18,7 @@ export class QueryLogger extends TransactionLogger {
     return query.length > length ? `${query.substring(0, length)}...` : query;
   }
 
-  public logQueryExecuted(queryResult: QueryResult<unknown>): void {
+  public logQueryExecuted(queryResult: QueryResult): void {
     const truncatedQuery = QueryLogger.truncateQuery(queryResult.config.text);
     this.driver.log(
       `Executed postgres query: "${truncatedQuery}" in ` +

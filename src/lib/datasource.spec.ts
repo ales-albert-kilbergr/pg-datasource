@@ -25,7 +25,7 @@ describe('(Unit) Datasource', () => {
       const logger = mock<QueryLogger>();
       const datasource = new Datasource('test', pool, logger);
       // Act
-      const result = datasource.getPgPool();
+      const result = datasource.getPool();
       // Assert
       expect(result).toBe(pool);
     });

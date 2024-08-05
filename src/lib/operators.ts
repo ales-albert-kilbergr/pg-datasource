@@ -3,12 +3,7 @@ import { catchError, map, of, type OperatorFunction } from 'rxjs';
 import { QueryResult } from './query-result';
 import type { Class } from 'type-fest';
 import { plainToInstance, type ClassTransformOptions } from 'class-transformer';
-
-function toCamelCase(str: string): string {
-  return str.replace(/([-_][a-z])/gi, (match) => {
-    return match.toUpperCase().replace('-', '').replace('_', '');
-  });
-}
+import { toCamelCase } from '@kilbergr/string';
 
 export function transformKeys<R extends QueryResultRow>(
   transformFn: (key: string) => string,

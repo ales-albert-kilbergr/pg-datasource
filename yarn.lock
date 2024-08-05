@@ -768,6 +768,7 @@ __metadata:
   resolution: "@kilbergr/pg-datasource@workspace:."
   dependencies:
     "@kilbergr/pg-sql": "npm:^0.1.0-Dev.5"
+    "@kilbergr/string": "npm:^0.1.0-Dev.1"
     "@kilbergr/tagged-types": "npm:^0.1.0-Alpha.3"
     "@types/jest": "npm:^29.5.12"
     "@types/jsonwebtoken": "npm:^9.0.6"
@@ -802,6 +803,13 @@ __metadata:
     "@kilbergr/tagged-types": ^0.1.0-Alpha.3
     pg: ^8.12.0
   checksum: 10/507ea59ee68d421d1ad50b0c12ff278faab22f546705ef853ac650787a57ebc7e44f962a7803b00633b62cf7b5babed525f0c770ec7560cc74ee205cf7704bda
+  languageName: node
+  linkType: hard
+
+"@kilbergr/string@npm:^0.1.0-Dev.1":
+  version: 0.1.0-Dev.1
+  resolution: "@kilbergr/string@npm:0.1.0-Dev.1"
+  checksum: 10/3381f1d4376b76379bf625816240b4f7c9450561f4d37cc614d494874fea1996b3f9e89d7aa712d19d922f02e467de8bc106148fab8973c5e09d12f49d2234b4
   languageName: node
   linkType: hard
 

@@ -5,6 +5,7 @@ import { TransactionRunner } from './transaction-runner';
 import type { QueryLogger } from './query-logger';
 import { from, type Observable } from 'rxjs';
 import type { TransactionStats } from './transaction-stats';
+import { Class } from 'type-fest';
 
 export class QueryRunner {
   private readonly pool: Pool;
@@ -21,6 +22,10 @@ export class QueryRunner {
   public static getDurationInMilliseconds(startTime: bigint): number {
     // eslint-disable-next-line @typescript-eslint/no-magic-numbers
     return Number((process.hrtime.bigint() - startTime) / BigInt(1e6));
+  }
+
+  public createRepository<R, C>(repositoryClass: Class<R>, config?: C): R {
+    return new repositoryClass(this, config);
   }
 
   public isInTransaction(): boolean {

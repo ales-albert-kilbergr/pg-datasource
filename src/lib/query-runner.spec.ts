@@ -466,4 +466,40 @@ describe('(Unit) QueryRunner', () => {
       expect(result.stats.rowCount).toBe(0);
     });
   });
+
+  describe('#createRepository', () => {
+    it('should return a new repository with a query runner within', () => {
+      // Arrange
+      const queryRunner = new QueryRunner(mock<Pool>(), mock<QueryLogger>());
+      class MyRepository {
+        public queryRunner: QueryRunner;
+
+        public constructor(_queryRunner: QueryRunner) {
+          this.queryRunner = _queryRunner;
+        }
+      }
+      // Act
+      const result = queryRunner.createRepository(MyRepository);
+      // Assert
+      expect(result).toBeInstanceOf(MyRepository);
+      expect(result.queryRunner).toBe(queryRunner);
+    });
+
+    it('should add custom configuration to the repository', () => {
+      // Arrange
+      const queryRunner = new QueryRunner(mock<Pool>(), mock<QueryLogger>());
+      class MyRepository {
+        public config: string;
+
+        public constructor(_queryRunner: QueryRunner, _config: string) {
+          this.config = _config;
+        }
+      }
+      // Act
+      const result = queryRunner.createRepository(MyRepository, 'test');
+      // Assert
+      expect(result).toBeInstanceOf(MyRepository);
+      expect(result.config).toBe('test');
+    });
+  });
 });

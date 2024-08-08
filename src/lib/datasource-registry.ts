@@ -7,6 +7,10 @@ export class DatasourceRegistry {
     this.register(...datasource);
   }
 
+  public get count(): number {
+    return this.map.size;
+  }
+
   public register(...datasource: Datasource[]): void {
     for (const ds of datasource) {
       this.map.set(ds.name, ds);

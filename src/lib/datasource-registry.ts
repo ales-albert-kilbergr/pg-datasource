@@ -7,7 +7,7 @@ export class DatasourceRegistry {
     this.register(...datasource);
   }
 
-  public get count(): number {
+  public count(): number {
     return this.map.size;
   }
 

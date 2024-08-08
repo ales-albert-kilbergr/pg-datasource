@@ -1,4 +1,5 @@
 export * from './lib/datasource';
+export * from './lib/datasource-logger';
 export * from './lib/datasource-registry';
 export * from './lib/query-logger';
 export * from './lib/query-stats';

@@ -24,4 +24,10 @@ export class DatasourceRegistry {
   public delete(name: string): boolean {
     return this.map.delete(name);
   }
+
+  public async destroyAll(): Promise<void> {
+    for (const ds of this.map.values()) {
+      await ds.destroy();
+    }
+  }
 }

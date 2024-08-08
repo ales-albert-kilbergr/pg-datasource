@@ -52,4 +52,8 @@ export class TransactionLogger {
       },
     });
   }
+
+  public getDriver(): LoggerDriver {
+    return this.driver;
+  }
 }

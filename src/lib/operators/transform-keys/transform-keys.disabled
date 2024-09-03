@@ -1,0 +1,73 @@
+import type { QueryResultRow } from 'pg';
+import type { OperatorFunction } from 'rxjs';
+import { map } from 'rxjs/operators';
+import type { QueryResult } from '../../query-result';
+import { toCamelCase } from '@kilbergr/string';
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export declare namespace transformKeys {
+  export type TransformFn = (key: string) => string;
+
+  export interface Options {
+    excludeNested?: boolean;
+  }
+}
+
+function transform(
+  input: unknown,
+  transformFn: transformKeys.TransformFn,
+  options: transformKeys.Options,
+): unknown {
+  if (Array.isArray(input)) {
+    return input.map((item) => transform(item, transformFn, options));
+  } else if (input !== null && typeof input === 'object') {
+    return Object.keys(input).reduce<Record<string, unknown>>((acc, key) => {
+      const value = (input as Record<string, unknown>)[key];
+      const transformedKey = transformFn(key);
+
+      if (
+        typeof value === 'object' &&
+        value !== null &&
+        options.excludeNested !== true
+      ) {
+        acc[transformedKey] = transform(value, transformFn, options);
+      } else {
+        acc[transformedKey] = value;
+      }
+
+      return acc;
+    }, {});
+  }
+
+  return input;
+}
+/**
+ * Transform keys of returned rows in a query result.
+ *
+ * @param transformFn
+ * @param options
+ */
+export function transformKeys<R extends QueryResultRow>(
+  transformFn: transformKeys.TransformFn,
+  options: transformKeys.Options = {},
+): OperatorFunction<QueryResult, QueryResult<R[]>> {
+  function projectFn(input: QueryResult): QueryResult<R[]> {
+    input.result.rows = transform(
+      input.result.rows,
+      transformFn,
+      options,
+    ) as R[];
+
+    return input as QueryResult<R[]>;
+  }
+
+  return map(projectFn);
+}
+
+transformKeys.toCamelCase = function toCamelCaseOperator<
+  R extends QueryResultRow,
+>(
+  options: transformKeys.Options = {},
+): OperatorFunction<QueryResult, QueryResult<R[]>> {
+  return transformKeys(toCamelCase, options);
+};

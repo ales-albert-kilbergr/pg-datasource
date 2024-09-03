@@ -1,0 +1,79 @@
+import { lastValueFrom, of } from 'rxjs';
+import { QueryResultStub } from '../../query-result.stub';
+import { transformToInstance } from './transform-to-instance';
+
+describe('(Unit) transformToInstance operator', () => {
+  it('should transform a plain object to an instance of a class', async () => {
+    // Arrange
+    class Person {
+      public firstName!: string;
+      public lastName!: string;
+      public emailAddress!: string;
+    }
+
+    const input = QueryResultStub();
+    input.result.rows = [
+      {
+        firstName: 'John',
+        lastName: 'Doe',
+        emailAddress: 'john.doe@example.com',
+      },
+    ];
+
+    const expectedOutput = new Person();
+    expectedOutput.firstName = 'John';
+    expectedOutput.lastName = 'Doe';
+    expectedOutput.emailAddress = 'john.doe@example.com';
+
+    // Act
+    const result = await lastValueFrom(
+      of(input).pipe(transformToInstance(Person)),
+    );
+    // Assert
+    expect(result.result.rows[0]).toBeInstanceOf(Person);
+    expect(result.result.rows[0]).toEqual(expectedOutput);
+  });
+
+  it('should transform multiple plain objects to instances of a class', async () => {
+    // Arrange
+    class Person {
+      public firstName!: string;
+      public lastName!: string;
+      public emailAddress!: string;
+    }
+
+    const input = QueryResultStub();
+    input.result.rows = [
+      {
+        firstName: 'John',
+        lastName: 'Doe',
+        emailAddress: 'john.doe@example.com',
+      },
+      {
+        firstName: 'Jane',
+        lastName: 'Doe',
+        emailAddress: 'jane.doe@example.com',
+      },
+    ];
+
+    const expectedOutput1 = new Person();
+    expectedOutput1.firstName = 'John';
+    expectedOutput1.lastName = 'Doe';
+    expectedOutput1.emailAddress = 'john.doe@example.com';
+
+    const expectedOutput2 = new Person();
+    expectedOutput2.firstName = 'Jane';
+    expectedOutput2.lastName = 'Doe';
+    expectedOutput2.emailAddress = 'jane.doe@example.com';
+    // Act
+    const result = await lastValueFrom(
+      of(input).pipe(transformToInstance(Person)),
+    );
+
+    // Assert
+    expect(result.result.rows[0]).toBeInstanceOf(Person);
+    expect(result.result.rows[0]).toEqual(expectedOutput1);
+    expect(result.result.rows[1]).toBeInstanceOf(Person);
+    expect(result.result.rows[1]).toEqual(expectedOutput2);
+  });
+});

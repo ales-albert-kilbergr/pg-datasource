@@ -1,0 +1,18 @@
+import { plainToInstance, type ClassTransformOptions } from 'class-transformer';
+import type { OperatorFunction } from 'rxjs';
+import type { Class } from 'type-fest';
+import type { QueryResult } from '../../query-result';
+import { map } from 'rxjs/operators';
+
+export function transformToInstance<T extends object>(
+  Constructor: Class<T>,
+  options?: ClassTransformOptions,
+): OperatorFunction<QueryResult, QueryResult<T[]>> {
+  return map((input: QueryResult): QueryResult<T[]> => {
+    input.result.rows = input.result.rows
+      .filter(Boolean)
+      .map((row) => plainToInstance(Constructor, row, options));
+
+    return input as QueryResult<T[]>;
+  });
+}

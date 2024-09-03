@@ -2,16 +2,30 @@ import type { Pool } from 'pg';
 import { QueryRunner } from './query-runner';
 import { sql } from '@kilbergr/pg-sql';
 import { AdvisoryLock } from './advisory-lock';
-import type { DatasourceLogger } from './datasource-logger';
+import type { TransactionRunner } from './transaction-runner';
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export declare namespace Datasource {
+  export interface Logger {
+    logAdvisoryLock: (lockId: number) => void;
+    logAdvisoryUnlock: (lockId: number) => void;
+  }
+}
 
 export class Datasource {
   public readonly pool: Pool;
 
   public readonly name: string;
 
-  public readonly logger: DatasourceLogger;
+  public readonly logger: Datasource.Logger &
+    QueryRunner.Logger &
+    TransactionRunner.Logger;
 
-  public constructor(name: string, pool: Pool, logger: DatasourceLogger) {
+  public constructor(
+    name: string,
+    pool: Pool,
+    logger: Datasource.Logger & QueryRunner.Logger & TransactionRunner.Logger,
+  ) {
     this.name = name;
     this.pool = pool;
     this.logger = logger;

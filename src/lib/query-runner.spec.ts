@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import { mock } from 'jest-mock-extended';
 import { QueryRunner } from './query-runner';
-import type { Pool, PoolClient } from 'pg';
-import type { QueryLogger } from './query-logger';
-import { Observable } from 'rxjs';
-import { QueryResult } from './query-result';
-import { QueryConfig } from '@kilbergr/pg-sql';
-import { QueryConfigStub } from '@kilbergr/pg-sql/testing';
+import { DatabaseError, type Pool, type PoolClient } from 'pg';
+import { QueryConfig, sql } from '@kilbergr/pg-sql';
+import type { TransactionRunner } from './transaction-runner';
+import * as E from 'fp-ts/lib/Either';
 
 describe('(Unit) QueryRunner', () => {
   describe('.getDurationInMilliseconds()', () => {
@@ -23,7 +21,10 @@ describe('(Unit) QueryRunner', () => {
   describe('#isInTransaction()', () => {
     it('should return false if not in a transaction', () => {
       // Arrange
-      const queryRunner = new QueryRunner(mock<Pool>(), mock<QueryLogger>());
+      const queryRunner = new QueryRunner(
+        mock<Pool>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
+      );
       // Act
       const result = queryRunner.isInTransaction();
       // Assert
@@ -36,7 +37,7 @@ describe('(Unit) QueryRunner', () => {
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(mock<PoolClient>()),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       // Act
       const resultBefore = queryRunner.isInTransaction();
@@ -53,7 +54,7 @@ describe('(Unit) QueryRunner', () => {
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(mock<PoolClient>()),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       // Act
       const resultBefore = queryRunner.isInTransaction();
@@ -75,7 +76,7 @@ describe('(Unit) QueryRunner', () => {
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(mock<PoolClient>()),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       // Act
       await queryRunner.startTransaction();
@@ -89,7 +90,7 @@ describe('(Unit) QueryRunner', () => {
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(mock<PoolClient>()),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       await queryRunner.startTransaction();
       // Act
@@ -109,7 +110,7 @@ describe('(Unit) QueryRunner', () => {
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(client),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       // Act
       await queryRunner.startTransaction();
@@ -126,7 +127,7 @@ describe('(Unit) QueryRunner', () => {
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(mock<PoolClient>()),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       // Act
       const before = queryRunner.isInTransaction();
@@ -142,7 +143,10 @@ describe('(Unit) QueryRunner', () => {
 
     it('should throw an error if not in a transaction', async () => {
       // Arrange
-      const queryRunner = new QueryRunner(mock<Pool>(), mock<QueryLogger>());
+      const queryRunner = new QueryRunner(
+        mock<Pool>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
+      );
       // Act
       const result = queryRunner.commitTransaction();
       // Assert
@@ -160,7 +164,7 @@ describe('(Unit) QueryRunner', () => {
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(client),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       await queryRunner.startTransaction();
       // Act
@@ -178,7 +182,7 @@ describe('(Unit) QueryRunner', () => {
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(mock<PoolClient>()),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       // Act
       const before = queryRunner.isInTransaction();
@@ -194,7 +198,10 @@ describe('(Unit) QueryRunner', () => {
 
     it('should throw an error if not in a transaction', async () => {
       // Arrange
-      const queryRunner = new QueryRunner(mock<Pool>(), mock<QueryLogger>());
+      const queryRunner = new QueryRunner(
+        mock<Pool>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
+      );
       // Act
       const result = queryRunner.rollbackTransaction();
       // Assert
@@ -212,7 +219,7 @@ describe('(Unit) QueryRunner', () => {
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(client),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       await queryRunner.startTransaction();
       // Act
@@ -220,27 +227,6 @@ describe('(Unit) QueryRunner', () => {
       // Assert
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(client.query).toHaveBeenCalledWith('ROLLBACK');
-    });
-  });
-
-  describe('#observe()', () => {
-    it('should return an Observable', () => {
-      // Arrange
-      const queryRunner = new QueryRunner(
-        mock<Pool>({
-          connect: jest.fn().mockResolvedValue(
-            mock<PoolClient>({
-              query: jest.fn().mockResolvedValue({ rowCount: 1 }),
-            }),
-          ),
-        }),
-        mock<QueryLogger>(),
-      );
-      // Act
-      const result = queryRunner.observe('SELECT 1');
-
-      // Assert
-      expect(result).toBeInstanceOf(Observable);
     });
   });
 
@@ -255,7 +241,7 @@ describe('(Unit) QueryRunner', () => {
             }),
           ),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       // Act
       const result = queryRunner.query('SELECT 1');
@@ -270,21 +256,26 @@ describe('(Unit) QueryRunner', () => {
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(
             mock<PoolClient>({
-              query: jest.fn().mockResolvedValue({ rowCount: 1 }),
+              query: jest.fn().mockResolvedValue({ rowCount: 1, rows: [] }),
             }),
           ),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       // Act
       const result = await queryRunner.query('SELECT 1');
       // Assert
-      expect(result).toBeInstanceOf(QueryResult);
+      expect(E.isRight(result)).toBe(true);
+      if (E.isRight(result)) {
+        expect(result.right).toHaveProperty('stats');
+        expect(result.right).toHaveProperty('rows');
+        expect(result.right).toHaveProperty('rowCount');
+      }
     });
 
-    it('should execute a query from a QueryConfig and return a result', async () => {
+    it('should forward the query id from config to the result', async () => {
       // Arrange
-      const queryConfig = QueryConfigStub();
+      const queryConfig = sql`SELECT 1`;
       const queryRunner = new QueryRunner(
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(
@@ -293,17 +284,20 @@ describe('(Unit) QueryRunner', () => {
             }),
           ),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       // Act
       const result = await queryRunner.query(queryConfig);
       // Assert
-      expect(result).toBeInstanceOf(QueryResult);
+      expect(E.isRight(result)).toBe(true);
+      if (E.isRight(result)) {
+        expect(result.right).toHaveProperty('queryId', queryConfig.id);
+      }
     });
 
     it('should log the query execution', async () => {
       // Arrange
-      const logger = mock<QueryLogger>();
+      const logger = mock<QueryRunner.Logger & TransactionRunner.Logger>();
       const queryRunner = new QueryRunner(
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(
@@ -315,11 +309,16 @@ describe('(Unit) QueryRunner', () => {
         logger,
       );
       // Act
-      await queryRunner.query('SELECT 1');
+      const queryConfig = sql`SELECT 1`;
+      await queryRunner.query(queryConfig);
       // Assert
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(logger.logQueryExecuted).toHaveBeenCalledWith(
-        expect.any(QueryResult),
+        queryConfig,
+        expect.objectContaining({
+          connectionDuration: 0,
+          executionDuration: 0,
+        }),
       );
     });
 
@@ -332,7 +331,7 @@ describe('(Unit) QueryRunner', () => {
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(client),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       // Act
       await queryRunner.query('SELECT 1');
@@ -350,7 +349,7 @@ describe('(Unit) QueryRunner', () => {
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(client),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       // Act
       await expect(queryRunner.query('SELECT 1')).rejects.toThrow('test');
@@ -361,7 +360,7 @@ describe('(Unit) QueryRunner', () => {
 
     it('should log a failed query', async () => {
       // Arrange
-      const logger = mock<QueryLogger>();
+      const logger = mock<QueryRunner.Logger & TransactionRunner.Logger>();
       const queryRunner = new QueryRunner(
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(
@@ -391,7 +390,7 @@ describe('(Unit) QueryRunner', () => {
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(client),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       await queryRunner.startTransaction();
       // Act
@@ -412,7 +411,7 @@ describe('(Unit) QueryRunner', () => {
             }),
           ),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       await queryRunner.startTransaction();
       // Act
@@ -438,7 +437,7 @@ describe('(Unit) QueryRunner', () => {
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(client),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       await queryRunner.startTransaction();
       // Act
@@ -448,29 +447,92 @@ describe('(Unit) QueryRunner', () => {
       expect(client.query).toHaveBeenCalledWith('ROLLBACK');
     });
 
-    it('should return a 0 as the default rowCount', async () => {
+    it('should return left with an error', async () => {
       // Arrange
       const queryRunner = new QueryRunner(
         mock<Pool>({
           connect: jest.fn().mockResolvedValue(
             mock<PoolClient>({
-              query: jest.fn().mockResolvedValue({}),
+              query: jest
+                .fn()
+                .mockRejectedValue(
+                  new DatabaseError('Error message', 10, 'error'),
+                ),
             }),
           ),
         }),
-        mock<QueryLogger>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
       // Act
       const result = await queryRunner.query('SELECT 1');
       // Assert
-      expect(result.stats.rowCount).toBe(0);
+      expect(E.isLeft(result)).toBe(true);
+      if (E.isLeft(result)) {
+        expect(result.left).toBeInstanceOf(DatabaseError);
+      }
+    });
+
+    it('should throw an error if it is not a DatabaseError', async () => {
+      // Arrange
+      const queryRunner = new QueryRunner(
+        mock<Pool>({
+          connect: jest.fn().mockResolvedValue(
+            mock<PoolClient>({
+              query: jest.fn().mockRejectedValue(new Error('test')),
+            }),
+          ),
+        }),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
+      );
+      // Act
+      const result = queryRunner.query('SELECT 1');
+      // Assert
+      await expect(result).rejects.toThrow('test');
+    });
+
+    it('should return left with DatabaseError if the connection fails to establish', async () => {
+      // Arrange
+      const queryRunner = new QueryRunner(
+        mock<Pool>({
+          connect: jest
+            .fn()
+            .mockRejectedValue(
+              new DatabaseError('Connection Failed', 10, 'error'),
+            ),
+        }),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
+      );
+      // Act
+      const result = await queryRunner.query('SELECT 1');
+      // Assert
+      expect(E.isLeft(result)).toBe(true);
+      if (E.isLeft(result)) {
+        expect(result.left).toBeInstanceOf(DatabaseError);
+      }
+    });
+
+    it('should throw an error if the connection fails to establish and it is not a DatabaseError', async () => {
+      // Arrange
+      const queryRunner = new QueryRunner(
+        mock<Pool>({
+          connect: jest.fn().mockRejectedValue(new Error('test')),
+        }),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
+      );
+      // Act
+      const result = queryRunner.query('SELECT 1');
+      // Assert
+      await expect(result).rejects.toThrow('test');
     });
   });
 
   describe('#createRepository', () => {
     it('should return a new repository with a query runner within', () => {
       // Arrange
-      const queryRunner = new QueryRunner(mock<Pool>(), mock<QueryLogger>());
+      const queryRunner = new QueryRunner(
+        mock<Pool>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
+      );
       class MyRepository {
         public queryRunner: QueryRunner;
 
@@ -487,7 +549,10 @@ describe('(Unit) QueryRunner', () => {
 
     it('should add custom configuration to the repository', () => {
       // Arrange
-      const queryRunner = new QueryRunner(mock<Pool>(), mock<QueryLogger>());
+      const queryRunner = new QueryRunner(
+        mock<Pool>(),
+        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
+      );
       class MyRepository {
         public config: string;
 

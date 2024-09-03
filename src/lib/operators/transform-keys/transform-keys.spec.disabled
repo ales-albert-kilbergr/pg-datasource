@@ -1,0 +1,218 @@
+import { transformKeys } from './transform-keys';
+import { lastValueFrom, of } from 'rxjs';
+import { QueryResultStub } from '../../query-result.stub';
+
+describe('(Unit) transformKeys operator', () => {
+  it('should transform keys of an object', async () => {
+    // Arrange
+    const input = QueryResultStub();
+    input.result.rows = [
+      {
+        first_name: 'John',
+        last_name: 'Doe',
+        email_address: 'john.doe@example.com',
+      },
+    ];
+    const expectedRows = [
+      {
+        FIRST_NAME: 'John',
+        LAST_NAME: 'Doe',
+        EMAIL_ADDRESS: 'john.doe@example.com',
+      },
+    ];
+
+    // Act
+    const result = await lastValueFrom(
+      of(input).pipe(transformKeys((key) => key.toUpperCase())),
+    );
+    // Assert
+    expect(result.result.rows).toEqual(expectedRows);
+  });
+
+  it('should transform keys of multiple objects', async () => {
+    // Arrange
+    const input = QueryResultStub();
+    input.result.rows = [
+      {
+        first_name: 'John',
+        last_name: 'Doe',
+        email_address: 'john.doe@example.com',
+      },
+      {
+        first_name: 'Jane',
+        last_name: 'Doe',
+        email_address: 'jane.doe@example.com',
+      },
+    ];
+
+    const expectedRows = [
+      {
+        FIRST_NAME: 'John',
+        LAST_NAME: 'Doe',
+        EMAIL_ADDRESS: 'john.doe@example.com',
+      },
+      {
+        FIRST_NAME: 'Jane',
+        LAST_NAME: 'Doe',
+        EMAIL_ADDRESS: 'jane.doe@example.com',
+      },
+    ];
+
+    // Act
+    const result = await lastValueFrom(
+      of(input).pipe(transformKeys((key) => key.toUpperCase())),
+    );
+
+    // Assert
+    expect(result.result.rows).toEqual(expectedRows);
+  });
+
+  it('should ignore nested objects of set in options', async () => {
+    // Arrange
+    const input = QueryResultStub();
+    input.result.rows = [
+      {
+        first_name: 'John',
+        last_name: 'Doe',
+        email_address: 'john.doe@example.com',
+        address: {
+          street: '123 Main St',
+          city: 'Anytown',
+          state: 'NY',
+          zip: '12345',
+        },
+      },
+    ];
+
+    const expectedRows = [
+      {
+        FIRST_NAME: 'John',
+        LAST_NAME: 'Doe',
+        EMAIL_ADDRESS: 'john.doe@example.com',
+        ADDRESS: {
+          street: '123 Main St',
+          city: 'Anytown',
+          state: 'NY',
+          zip: '12345',
+        },
+      },
+    ];
+    // Act
+    const result$ = await lastValueFrom(
+      of(input).pipe(
+        transformKeys((key) => key.toUpperCase(), { excludeNested: true }),
+      ),
+    );
+    // Assert
+    expect(result$.result.rows).toEqual(expectedRows);
+  });
+
+  it('should not ignore nested objects of not explicitly set in options', async () => {
+    // Arrange
+    const input = QueryResultStub();
+    input.result.rows = [
+      {
+        first_name: 'John',
+        last_name: 'Doe',
+        email_address: 'john.doe@example.com',
+        address: {
+          street: '123 Main St',
+          city: 'Anytown',
+          state: 'NY',
+          zip: '12345',
+        },
+      },
+    ];
+
+    const expectedRows = [
+      {
+        FIRST_NAME: 'John',
+        LAST_NAME: 'Doe',
+        EMAIL_ADDRESS: 'john.doe@example.com',
+        ADDRESS: {
+          STREET: '123 Main St',
+          CITY: 'Anytown',
+          STATE: 'NY',
+          ZIP: '12345',
+        },
+      },
+    ];
+    // Act
+    const result = await lastValueFrom(
+      of(input).pipe(transformKeys((key) => key.toUpperCase())),
+    );
+    // Assert
+    expect(result.result.rows).toEqual(expectedRows);
+  });
+
+  it('should work if input is an empty array', async () => {
+    // Arrange
+    const input = QueryResultStub();
+    input.result.rows = [];
+    const expectedRows: unknown[] = [];
+    // Act
+    const result = await lastValueFrom(
+      of(input).pipe(transformKeys((key) => key.toUpperCase())),
+    );
+    // Assert
+    expect(result.result.rows).toEqual(expectedRows);
+  });
+
+  it('should work with sub array of primitive values', async () => {
+    // Arrange
+    const input = QueryResultStub();
+    input.result.rows = [
+      {
+        first_name: 'John',
+        last_name: 'Doe',
+        email_address: 'john.doe@example.com',
+        tags: ['tag1', 'tag2', 'tag3'],
+      },
+    ];
+
+    const expectedRows = [
+      {
+        FIRST_NAME: 'John',
+        LAST_NAME: 'Doe',
+        EMAIL_ADDRESS: 'john.doe@example.com',
+        TAGS: ['tag1', 'tag2', 'tag3'],
+      },
+    ];
+    // Act
+    const result = await lastValueFrom(
+      of(input).pipe(transformKeys((key) => key.toUpperCase())),
+    );
+    // Assert
+    expect(result.result.rows).toEqual(expectedRows);
+  });
+
+  it('should transform keys to camel case', async () => {
+    // Arrange
+    const input = QueryResultStub();
+    input.result.rows = [
+      {
+        first_name: 'John',
+        last_name: 'Doe',
+        email_address: 'john.doe@example.com',
+        tags: ['tag1', 'tag2', 'tag3'],
+      },
+    ];
+
+    const expectedRows = [
+      {
+        firstName: 'John',
+        lastName: 'Doe',
+        emailAddress: 'john.doe@example.com',
+        tags: ['tag1', 'tag2', 'tag3'],
+      },
+    ];
+
+    // Act
+    const result = await lastValueFrom(
+      of(input).pipe(transformKeys.toCamelCase()),
+    );
+
+    // Assert
+    expect(result.result.rows).toEqual(expectedRows);
+  });
+});

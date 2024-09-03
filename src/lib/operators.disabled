@@ -1,59 +1,6 @@
 import { DatabaseError, type QueryResultRow } from 'pg';
 import { catchError, map, of, type OperatorFunction } from 'rxjs';
 import { QueryResult } from './query-result';
-import type { Class } from 'type-fest';
-import { plainToInstance, type ClassTransformOptions } from 'class-transformer';
-import { toCamelCase } from '@kilbergr/string';
-
-export function transformKeys<R extends QueryResultRow>(
-  transformFn: (key: string) => string,
-): OperatorFunction<QueryResult | QueryResultRow[], R[]> {
-  return map((input: QueryResult | QueryResultRow[]): R[] => {
-    const rows = Array.isArray(input) ? input : input.result.rows;
-
-    return rows.map((row) =>
-      Object.keys(row).reduce((acc, key) => {
-        (acc as QueryResultRow)[transformFn(key)] = row[key];
-        return acc;
-      }, {}),
-    ) as R[];
-  });
-}
-
-export function transformKeysToCamelCase<
-  R extends QueryResultRow,
->(): OperatorFunction<QueryResult | QueryResultRow[], R[]> {
-  return transformKeys<R>(toCamelCase);
-}
-
-export function transformToInstance<T>(
-  Constructor: Class<T>,
-  options?: ClassTransformOptions,
-): OperatorFunction<QueryResult | QueryResultRow[], T | T[]> {
-  return map(
-    (
-      input: QueryResult | QueryResultRow[] | QueryResultRow | null | undefined,
-    ): T | T[] => {
-      if (input === undefined || input === null) return input as unknown as T;
-      if (Array.isArray(input)) {
-        return input.length > 0
-          ? plainToInstance(Constructor, input, options)
-          : [];
-      } else if (input instanceof QueryResult) {
-        return Array.isArray(input.result.rows) && input.result.rows.length > 0
-          ? plainToInstance(Constructor, input.result.rows, options)
-          : [];
-      } else if (typeof input === 'object') {
-        return plainToInstance(Constructor, input, options);
-      } else {
-        throw new TypeError(
-          `Cannot transform ${typeof input} into ${Constructor.name}! ` +
-            `Expected an object or array of objects, but received ${typeof input}`,
-        );
-      }
-    },
-  );
-}
 
 export function pickFirst<T>(): OperatorFunction<
   QueryResult | QueryResultRow[] | T[] | T,
@@ -74,26 +21,6 @@ export function pickFirst<T>(): OperatorFunction<
       } else {
         return input;
       }
-    },
-  );
-}
-
-/**
- * Reduce a query result to a single field per row
- */
-export function reduceToColumn<T>(
-  fieldName: string,
-  transformFn?: (value: unknown) => T,
-): OperatorFunction<QueryResult | QueryResultRow[] | null | undefined, T[]> {
-  return map(
-    (input: QueryResult | QueryResultRow[] | null | undefined): T[] => {
-      if (!input) return [];
-
-      const rows = input instanceof QueryResult ? input.result.rows : input;
-
-      return rows.map<T>((row) =>
-        transformFn ? transformFn(row[fieldName]) : (row[fieldName] as T),
-      );
     },
   );
 }
@@ -209,6 +136,35 @@ export function catchUndefinedTableError<R = unknown>(
     const table = match?.groups?.table ?? '';
 
     return catchFn(table, error);
+  });
+}
+
+export type MissingPartitionErrorHandler<C extends object, R = unknown> = (
+  missingPartition: C,
+  error: DatabaseError,
+) => ReturnType<DatabaseErrorHandler<R>>;
+
+export function catchMissingPartitionError<C extends object, R = unknown>(
+  catchFn: MissingPartitionErrorHandler<C, R>,
+): ReturnType<typeof catchDatabaseError> {
+  return catchDatabaseError('23514', (error: DatabaseError): unknown => {
+    const match =
+      /Partition key of the failing row contains \((?<partition>.*?)\) = \((?<value>.*?)\)/.exec(
+        error.message,
+      );
+    const partitionKeys = (match?.groups?.partition ?? '')
+      .split(',')
+      .map((key) => key.trim());
+    const partitionValues = (match?.groups?.value ?? '')
+      .split(',')
+      .map((value) => value.trim());
+
+    const partition = partitionKeys.reduce((acc, key, index) => {
+      Reflect.set(acc, key, partitionValues[index]);
+      return acc as C;
+    }, {}) as C;
+
+    return catchFn(partition, error);
   });
 }
 

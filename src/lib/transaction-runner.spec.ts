@@ -1,5 +1,4 @@
 import { mock } from 'jest-mock-extended';
-import type { TransactionLogger } from './transaction-logger';
 import { TransactionRunner } from './transaction-runner';
 import type { Pool, PoolClient } from 'pg';
 
@@ -11,7 +10,7 @@ describe('(Unit) TransactionRunner', () => {
       const pool = mock<Pool>({
         connect: jest.fn().mockResolvedValue(client),
       });
-      const transactionLogger = mock<TransactionLogger>();
+      const transactionLogger = mock<TransactionRunner.Logger>();
       const transactionRunner = new TransactionRunner(pool, transactionLogger);
       // Act
       await transactionRunner.start();
@@ -26,7 +25,7 @@ describe('(Unit) TransactionRunner', () => {
       const pool = mock<Pool>({
         connect: jest.fn().mockResolvedValue(client),
       });
-      const transactionLogger = mock<TransactionLogger>();
+      const transactionLogger = mock<TransactionRunner.Logger>();
       const transactionRunner = new TransactionRunner(pool, transactionLogger);
       // Act
       await transactionRunner.start();
@@ -42,7 +41,7 @@ describe('(Unit) TransactionRunner', () => {
       const pool = mock<Pool>({
         connect: jest.fn().mockResolvedValue(client),
       });
-      const transactionLogger = mock<TransactionLogger>();
+      const transactionLogger = mock<TransactionRunner.Logger>();
       const transactionRunner = new TransactionRunner(pool, transactionLogger);
       // Act
       await transactionRunner.start();
@@ -61,7 +60,7 @@ describe('(Unit) TransactionRunner', () => {
       const pool = mock<Pool>({
         connect: jest.fn().mockResolvedValue(client),
       });
-      const transactionLogger = mock<TransactionLogger>();
+      const transactionLogger = mock<TransactionRunner.Logger>();
       const transactionRunner = new TransactionRunner(pool, transactionLogger);
       // Act
       await transactionRunner.start();
@@ -77,7 +76,7 @@ describe('(Unit) TransactionRunner', () => {
       const pool = mock<Pool>({
         connect: jest.fn().mockResolvedValue(client),
       });
-      const transactionLogger = mock<TransactionLogger>();
+      const transactionLogger = mock<TransactionRunner.Logger>();
       const transactionRunner = new TransactionRunner(pool, transactionLogger);
       // Act
       // Assert
@@ -92,7 +91,7 @@ describe('(Unit) TransactionRunner', () => {
       const pool = mock<Pool>({
         connect: jest.fn().mockResolvedValue(client),
       });
-      const transactionLogger = mock<TransactionLogger>();
+      const transactionLogger = mock<TransactionRunner.Logger>();
       const transactionRunner = new TransactionRunner(pool, transactionLogger);
       // Act
       await transactionRunner.start();
@@ -113,7 +112,7 @@ describe('(Unit) TransactionRunner', () => {
       const pool = mock<Pool>({
         connect: jest.fn().mockResolvedValue(client),
       });
-      const transactionLogger = mock<TransactionLogger>();
+      const transactionLogger = mock<TransactionRunner.Logger>();
       const transactionRunner = new TransactionRunner(pool, transactionLogger);
       // Act
       await transactionRunner.start();
@@ -129,7 +128,7 @@ describe('(Unit) TransactionRunner', () => {
       const pool = mock<Pool>({
         connect: jest.fn().mockResolvedValue(client),
       });
-      const transactionLogger = mock<TransactionLogger>();
+      const transactionLogger = mock<TransactionRunner.Logger>();
       const transactionRunner = new TransactionRunner(pool, transactionLogger);
       // Act
       // Assert
@@ -144,7 +143,7 @@ describe('(Unit) TransactionRunner', () => {
       const pool = mock<Pool>({
         connect: jest.fn().mockResolvedValue(client),
       });
-      const transactionLogger = mock<TransactionLogger>();
+      const transactionLogger = mock<TransactionRunner.Logger>();
       const transactionRunner = new TransactionRunner(pool, transactionLogger);
       // Act
       await transactionRunner.start();

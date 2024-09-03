@@ -52,10 +52,11 @@
     "zx": "^8.1.4"
   },
   "dependencies": {
-    "@kilbergr/pg-sql": "^0.1.0-Dev.5",
+    "@kilbergr/pg-sql": "^0.1.0-Dev.15",
     "@kilbergr/string": "^0.1.0-Dev.1",
     "@kilbergr/tagged-types": "^0.1.0-Alpha.3",
     "class-transformer": "^0.5.1",
+    "fp-ts": "^2.16.9",
     "pg": "^8.12.0",
     "rxjs": "^7.8.1"
   },

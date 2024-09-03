@@ -767,7 +767,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kilbergr/pg-datasource@workspace:."
   dependencies:
-    "@kilbergr/pg-sql": "npm:^0.1.0-Dev.5"
+    "@kilbergr/pg-sql": "npm:^0.1.0-Dev.15"
     "@kilbergr/string": "npm:^0.1.0-Dev.1"
     "@kilbergr/tagged-types": "npm:^0.1.0-Alpha.3"
     "@types/jest": "npm:^29.5.12"
@@ -781,6 +781,7 @@ __metadata:
     eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:^9.1.0"
     eslint-plugin-import: "npm:^2.29.1"
+    fp-ts: "npm:^2.16.9"
     jest: "npm:^29.7.0"
     jest-mock-extended: "npm:^3.0.7"
     jsonwebtoken: "npm:^9.0.2"
@@ -796,13 +797,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kilbergr/pg-sql@npm:^0.1.0-Dev.5":
-  version: 0.1.0-Dev.5
-  resolution: "@kilbergr/pg-sql@npm:0.1.0-Dev.5"
+"@kilbergr/pg-sql@npm:^0.1.0-Dev.15":
+  version: 0.1.0-Dev.15
+  resolution: "@kilbergr/pg-sql@npm:0.1.0-Dev.15"
   peerDependencies:
     "@kilbergr/tagged-types": ^0.1.0-Alpha.3
     pg: ^8.12.0
-  checksum: 10/507ea59ee68d421d1ad50b0c12ff278faab22f546705ef853ac650787a57ebc7e44f962a7803b00633b62cf7b5babed525f0c770ec7560cc74ee205cf7704bda
+  checksum: 10/a2dd2b19b588413046214d9376ef8c8d4dc4fb5be5d9ce55d5bae5a7f8e39b20b75a6623060938da90e5d404c9f4a25dcc186ffefa6e8f3e345cf9364d650df0
   languageName: node
   linkType: hard
 
@@ -2607,6 +2608,13 @@ __metadata:
     cross-spawn: "npm:^7.0.0"
     signal-exit: "npm:^4.0.1"
   checksum: 10/77b33b3c438a499201727ca84de39a66350ccd54a8805df712773e963cefb5c4632dbc4386109e97a0df8fb1585aee95fa35acb07587e3e04cfacabfc0ae15dc
+  languageName: node
+  linkType: hard
+
+"fp-ts@npm:^2.16.9":
+  version: 2.16.9
+  resolution: "fp-ts@npm:2.16.9"
+  checksum: 10/af5c3fa829456da60ed63b5288907868f0df01a7215acfc5697f621a21f76b0a0f7b7c08ac81f2bcf7ecae13a6c6d41047e739a79cf239db19cd49afd7e8e015
   languageName: node
   linkType: hard
 

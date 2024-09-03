@@ -1,20 +1,55 @@
-import type { Pool, QueryResultRow } from 'pg';
+import {
+  DatabaseError,
+  type Pool,
+  type QueryResultRow,
+  type QueryResult,
+  type PoolClient,
+} from 'pg';
 import { QueryConfig } from '@kilbergr/pg-sql';
-import { QueryResult } from './query-result';
 import { TransactionRunner } from './transaction-runner';
-import type { QueryLogger } from './query-logger';
-import { from, type Observable } from 'rxjs';
-import type { TransactionStats } from './transaction-stats';
-import { Class } from 'type-fest';
+import type { Class } from 'type-fest';
+import * as E from 'fp-ts/lib/Either';
+
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export declare namespace QueryRunner {
+  export interface Logger {
+    logQueryExecuted: (queryConfig: QueryConfig, queryStats: Stats) => void;
+    logQueryFailed: (error: unknown, queryConfig: QueryConfig) => void;
+  }
+
+  export interface Stats {
+    /**
+     * Time it took the runner to obtain an available database client. Time
+     * is given in milliseconds. If missing the query failed to obtain a
+     * client. Defaults to -1. (no connection time)
+     */
+    connectionDuration: number;
+    /**
+     * Time it took the runner to execute the query. Time is given in
+     * milliseconds. If missing the query failed to execute. Defaults to -1.
+     * (no execution time)
+     */
+    executionDuration: number;
+  }
+
+  export interface Result<R extends QueryResultRow = QueryResultRow>
+    extends QueryResult<R> {
+    stats: Stats;
+    queryId: string;
+  }
+}
 
 export class QueryRunner {
   private readonly pool: Pool;
 
-  private readonly logger: QueryLogger;
+  private readonly logger: QueryRunner.Logger & TransactionRunner.Logger;
 
   private transaction?: TransactionRunner;
 
-  public constructor(pool: Pool, logger: QueryLogger) {
+  public constructor(
+    pool: Pool,
+    logger: QueryRunner.Logger & TransactionRunner.Logger,
+  ) {
     this.pool = pool;
     this.logger = logger;
   }
@@ -32,7 +67,7 @@ export class QueryRunner {
     return !!this.transaction;
   }
 
-  public getTransactionStats(): TransactionStats | undefined {
+  public getTransactionStats(): TransactionRunner.Stats | undefined {
     return this.transaction?.stats;
   }
 
@@ -72,49 +107,65 @@ export class QueryRunner {
     this.transaction = undefined;
   }
 
-  public observe<R extends QueryResultRow>(
-    queryConfig: string | QueryConfig,
-  ): Observable<QueryResult<R>> {
-    return from(this.query<R>(queryConfig));
-  }
-
   public async query<R extends QueryResultRow>(
-    queryConfig: string | QueryConfig,
-  ): Promise<QueryResult<R>> {
-    const queryConfigObj =
-      typeof queryConfig === 'string'
-        ? new QueryConfig(queryConfig)
-        : queryConfig;
-    const result = new QueryResult<R>(queryConfigObj);
+    input: string | QueryConfig,
+  ): Promise<E.Either<DatabaseError, QueryRunner.Result<R>>> {
+    // Resolve the query input into a QueryConfig object
+    const queryConfig =
+      typeof input === 'string' ? new QueryConfig(input) : input;
+
     const connectionStartTime = process.hrtime.bigint();
     // If the query runner is in the middle of a transaction the
     // client is already set and we don't need to connect to the pool.
-    const client = this.transaction?.client ?? (await this.pool.connect());
-    result.stats.connectionDuration =
-      QueryRunner.getDurationInMilliseconds(connectionStartTime);
-    const queryStartTime = process.hrtime.bigint();
+    // eslint-disable-next-line @typescript-eslint/init-declarations
+    let client: PoolClient;
 
     try {
-      result.result = await client.query<R>(queryConfigObj);
+      client = this.transaction?.client ?? (await this.pool.connect());
+    } catch (error) {
+      this.logger.logQueryFailed(error, queryConfig);
 
-      result.stats.executionDuration =
+      if (error instanceof DatabaseError) {
+        return E.left<DatabaseError, QueryRunner.Result<R>>(error);
+      }
+      // Other than DatabaseError should not happen. If it does, it should
+      // be considered a bug in the code.
+      throw error;
+    }
+
+    try {
+      const queryStats: QueryRunner.Stats = {
+        connectionDuration: -1,
+        executionDuration: -1,
+      };
+
+      queryStats.connectionDuration =
+        QueryRunner.getDurationInMilliseconds(connectionStartTime);
+
+      const queryStartTime = process.hrtime.bigint();
+
+      const queryResult = Object.assign(await client.query<R>(queryConfig), {
+        stats: queryStats,
+        queryId: queryConfig.id,
+      });
+
+      queryStats.executionDuration =
         QueryRunner.getDurationInMilliseconds(queryStartTime);
-      result.stats.rowCount = result.result.rowCount ?? 0;
 
       if (this.transaction) {
         this.transaction.stats.queryCount =
           this.transaction.stats.queryCount + 1;
       }
 
-      this.logger.logQueryExecuted(result);
+      this.logger.logQueryExecuted(queryConfig, queryStats);
 
       if (!this.isInTransaction()) {
         client.release();
       }
 
-      return result;
+      return E.right<DatabaseError, QueryRunner.Result<R>>(queryResult);
     } catch (error) {
-      this.logger.logQueryFailed(error, queryConfigObj);
+      this.logger.logQueryFailed(error, queryConfig);
 
       if (this.isInTransaction()) {
         await this.rollbackTransaction();
@@ -122,6 +173,11 @@ export class QueryRunner {
         client.release();
       }
 
+      if (error instanceof DatabaseError) {
+        return E.left<DatabaseError, QueryRunner.Result<R>>(error);
+      }
+      // Other than DatabaseError should not happen. If it does, it should
+      // be considered a bug in the code.
       throw error;
     }
   }

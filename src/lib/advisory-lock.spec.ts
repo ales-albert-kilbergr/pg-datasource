@@ -1,16 +1,19 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { mock } from 'jest-mock-extended';
 import type { Pool } from 'pg';
-import type { DatasourceLogger } from './datasource-logger';
 import { Datasource } from './datasource';
 import { AdvisoryLock } from './advisory-lock';
+import type { QueryRunner } from './query-runner';
+import type { TransactionRunner } from './transaction-runner';
 
 describe('(Unit) AdvisoryLock', () => {
   describe('getStatus', () => {
     it('should return IDLE status when lock is created but not yet locked', () => {
       // Arrange
       const pool = mock<Pool>();
-      const logger = mock<DatasourceLogger>();
+      const logger = mock<
+        QueryRunner.Logger & TransactionRunner.Logger & Datasource.Logger
+      >();
       const datasource = new Datasource('test', pool, logger);
       const advisoryLock = new AdvisoryLock(datasource, 1);
       // Act
@@ -22,7 +25,9 @@ describe('(Unit) AdvisoryLock', () => {
     it('should return LOCKED status when lock is locked', async () => {
       // Arrange
       const pool = mock<Pool>();
-      const logger = mock<DatasourceLogger>();
+      const logger = mock<
+        QueryRunner.Logger & TransactionRunner.Logger & Datasource.Logger
+      >();
       const datasource = new Datasource('test', pool, logger);
       const advisoryLock = new AdvisoryLock(datasource, 1);
       await advisoryLock.lock();
@@ -35,7 +40,9 @@ describe('(Unit) AdvisoryLock', () => {
     it('should return IDLE status after the lock is unlocked', async () => {
       // Arrange
       const pool = mock<Pool>();
-      const logger = mock<DatasourceLogger>();
+      const logger = mock<
+        QueryRunner.Logger & TransactionRunner.Logger & Datasource.Logger
+      >();
       const datasource = new Datasource('test', pool, logger);
       const advisoryLock = new AdvisoryLock(datasource, 1);
       await advisoryLock.lock();
@@ -51,7 +58,9 @@ describe('(Unit) AdvisoryLock', () => {
     it('should lock the advisory lock', async () => {
       // Arrange
       const pool = mock<Pool>();
-      const logger = mock<DatasourceLogger>();
+      const logger = mock<
+        QueryRunner.Logger & TransactionRunner.Logger & Datasource.Logger
+      >();
       const datasource = new Datasource('test', pool, logger);
       const advisoryLock = new AdvisoryLock(datasource, 1);
       // Act
@@ -68,7 +77,9 @@ describe('(Unit) AdvisoryLock', () => {
     it('should log the advisory lock', async () => {
       // Arrange
       const pool = mock<Pool>();
-      const logger = mock<DatasourceLogger>();
+      const logger = mock<
+        QueryRunner.Logger & TransactionRunner.Logger & Datasource.Logger
+      >();
       const datasource = new Datasource('test', pool, logger);
       const advisoryLock = new AdvisoryLock(datasource, 1);
       // Act
@@ -82,7 +93,9 @@ describe('(Unit) AdvisoryLock', () => {
     it('should unlock the advisory lock', async () => {
       // Arrange
       const pool = mock<Pool>();
-      const logger = mock<DatasourceLogger>();
+      const logger = mock<
+        QueryRunner.Logger & TransactionRunner.Logger & Datasource.Logger
+      >();
       const datasource = new Datasource('test', pool, logger);
       const advisoryLock = new AdvisoryLock(datasource, 1);
       // Act
@@ -99,7 +112,9 @@ describe('(Unit) AdvisoryLock', () => {
     it('should log the advisory unlock', async () => {
       // Arrange
       const pool = mock<Pool>();
-      const logger = mock<DatasourceLogger>();
+      const logger = mock<
+        QueryRunner.Logger & TransactionRunner.Logger & Datasource.Logger
+      >();
       const datasource = new Datasource('test', pool, logger);
       const advisoryLock = new AdvisoryLock(datasource, 1);
       // Act

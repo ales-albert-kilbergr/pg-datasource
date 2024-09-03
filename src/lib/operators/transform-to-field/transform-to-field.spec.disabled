@@ -1,0 +1,61 @@
+import { lastValueFrom, of } from 'rxjs';
+import { QueryResultStub } from '../../query-result.stub';
+import { transformToField } from './transform-to-field';
+
+describe('(Unit) transformToField operator', () => {
+  it('should transform an array of rows into an array of values from a specific field', async () => {
+    // Arrange
+    const input = QueryResultStub();
+    input.result.rows = [
+      {
+        first_name: 'John',
+        last_name: 'Doe',
+        age: 30,
+      },
+      {
+        first_name: 'Jane',
+        last_name: 'Doe',
+        age: 25,
+      },
+    ];
+
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+    const expectedRows = [30, 25];
+
+    // Act
+    const result = await lastValueFrom(of(input).pipe(transformToField('age')));
+
+    // Assert
+    expect(result.result.rows).toEqual(expectedRows);
+  });
+
+  it('should apply a transformation function to the values', async () => {
+    // Arrange
+    const input = QueryResultStub();
+    input.result.rows = [
+      {
+        first_name: 'John',
+        last_name: 'Doe',
+        age: 30,
+      },
+      {
+        first_name: 'Jane',
+        last_name: 'Doe',
+        age: 25,
+      },
+    ];
+
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+    const expectedRows = [30n, 25n];
+
+    // Act
+    const result = await lastValueFrom(
+      of(input).pipe(
+        transformToField('age', BigInt as (value: unknown) => bigint),
+      ),
+    );
+
+    // Assert
+    expect(result.result.rows).toEqual(expectedRows);
+  });
+});

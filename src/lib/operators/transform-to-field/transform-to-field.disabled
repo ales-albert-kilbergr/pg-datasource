@@ -1,0 +1,21 @@
+import type { OperatorFunction } from 'rxjs';
+import type { QueryResult } from '../../query-result';
+import { map } from 'rxjs/operators';
+
+/**
+ * Transform an array of rows into an array of values from a specific field.
+ */
+export function transformToField<T>(
+  fieldName: string,
+  transformFn?: (value: unknown) => T,
+): OperatorFunction<QueryResult, QueryResult<T[]>> {
+  return map((input: QueryResult): QueryResult<T[]> => {
+    (input as QueryResult<T[]>).result.rows = input.result.rows.map((row) => {
+      const value = row[fieldName];
+
+      return transformFn ? transformFn(value) : (value as T);
+    });
+
+    return input as QueryResult<T[]>;
+  });
+}

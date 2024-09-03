@@ -2,15 +2,17 @@ import { mock } from 'jest-mock-extended';
 import type { Pool } from 'pg';
 import { Datasource } from './datasource';
 import { QueryRunner } from './query-runner';
-import type { DatasourceLogger } from './datasource-logger';
 import { AdvisoryLock } from './advisory-lock';
+import type { TransactionRunner } from './transaction-runner';
 
 describe('(Unit) Datasource', () => {
   describe('constructor', () => {
     it('should set the name, pool, and logger', () => {
       // Arrange
       const pool = mock<Pool>();
-      const logger = mock<DatasourceLogger>();
+      const logger = mock<
+        QueryRunner.Logger & TransactionRunner.Logger & Datasource.Logger
+      >();
       // Act
       const datasource = new Datasource('test', pool, logger);
       // Assert
@@ -23,7 +25,9 @@ describe('(Unit) Datasource', () => {
     it('should return the pool', () => {
       // Arrange
       const pool = mock<Pool>();
-      const logger = mock<DatasourceLogger>();
+      const logger = mock<
+        QueryRunner.Logger & TransactionRunner.Logger & Datasource.Logger
+      >();
       const datasource = new Datasource('test', pool, logger);
       // Act
       const result = datasource.getPool();
@@ -36,7 +40,9 @@ describe('(Unit) Datasource', () => {
     it('should return a new QueryRunner', () => {
       // Arrange
       const pool = mock<Pool>();
-      const logger = mock<DatasourceLogger>();
+      const logger = mock<
+        QueryRunner.Logger & TransactionRunner.Logger & Datasource.Logger
+      >();
       const datasource = new Datasource('test', pool, logger);
       // Act
       const result = datasource.createQueryRunner();
@@ -49,7 +55,9 @@ describe('(Unit) Datasource', () => {
     it('should end the pool', async () => {
       // Arrange
       const pool = mock<Pool>();
-      const logger = mock<DatasourceLogger>();
+      const logger = mock<
+        QueryRunner.Logger & TransactionRunner.Logger & Datasource.Logger
+      >();
       const datasource = new Datasource('test', pool, logger);
       // Act
       await datasource.destroy();
@@ -63,7 +71,9 @@ describe('(Unit) Datasource', () => {
     it('should return a new AdvisoryLock', () => {
       // Arrange
       const pool = mock<Pool>();
-      const logger = mock<DatasourceLogger>();
+      const logger = mock<
+        QueryRunner.Logger & TransactionRunner.Logger & Datasource.Logger
+      >();
       const datasource = new Datasource('test', pool, logger);
       // Act
       const result = datasource.createAdvisorLock(1);

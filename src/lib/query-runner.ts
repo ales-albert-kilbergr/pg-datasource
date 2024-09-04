@@ -9,6 +9,7 @@ import { QueryConfig } from '@kilbergr/pg-sql';
 import { TransactionRunner } from './transaction-runner';
 import type { Class } from 'type-fest';
 import * as E from 'fp-ts/lib/Either';
+import type { SqlQuery, SqlStatement } from './queries';
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace QueryRunner {
@@ -105,6 +106,17 @@ export class QueryRunner {
     await this.transaction.rollback();
 
     this.transaction = undefined;
+  }
+
+  public prepare<
+    ARGS extends object,
+    RESULT = QueryRunner.Result,
+    PROCESSED_ERROR = DatabaseError,
+  >(
+    statement: SqlStatement<ARGS, RESULT, PROCESSED_ERROR>,
+    args: ARGS,
+  ): SqlQuery<ARGS, RESULT, PROCESSED_ERROR> {
+    return statement.prepare(this, args);
   }
 
   public async query<R extends QueryResultRow>(

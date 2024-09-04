@@ -4,3 +4,4 @@ export * from './lib/query-runner';
 export * from './lib/repository';
 export * from './lib/advisory-lock';
 export * from './lib/queries';
+export * from './lib/transaction-runner';

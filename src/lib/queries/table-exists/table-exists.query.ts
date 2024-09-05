@@ -1,6 +1,6 @@
 import { type QueryConfig, sql } from '@kilbergr/pg-sql';
 import {
-  pickFirstRow,
+  pickFirstRecord,
   processResultFlow,
   reduceToColumn,
   SqlStatement,
@@ -24,6 +24,6 @@ export const TableExistsQuery = SqlStatement.create({
   build,
   processResult: processResultFlow(
     reduceToColumn<boolean>('exists'),
-    pickFirstRow(),
+    pickFirstRecord(),
   ),
 });

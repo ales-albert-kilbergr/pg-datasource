@@ -1,6 +1,6 @@
 import { type QueryConfig, sql } from '@kilbergr/pg-sql';
 import {
-  pickFirstRow,
+  pickFirstRecord,
   processResultFlow,
   reduceToColumn,
   SqlStatement,
@@ -22,6 +22,6 @@ export const SelectColumnTypeQuery = SqlStatement.create({
   build,
   processResult: processResultFlow(
     reduceToColumn<string>('data_type'),
-    pickFirstRow(),
+    pickFirstRecord(),
   ),
 });

@@ -1,7 +1,7 @@
 import type { QueryResultRow } from 'pg';
 import {
-  pickFirstRow,
-  pickNthRow,
+  pickFirstRecord,
+  pickNthRecord,
   processResultFlow,
   reduceToColumn,
   reduceToVoid,
@@ -29,7 +29,7 @@ describe('(Unit) Result Processors', () => {
       const result = processResultFlow(
         transformColumnKeysToCamelCase(),
         transformRowToInstance(Test),
-        pickFirstRow(),
+        pickFirstRecord(),
       )(processorCtx);
       // Assert
       expect(result).toBeInstanceOf(Test);
@@ -45,7 +45,7 @@ describe('(Unit) Result Processors', () => {
         { column: 'value2' },
       ];
       // Act
-      const result = pickNthRow(1)(rows);
+      const result = pickNthRecord(1)(rows);
       // Assert
       expect(result).toEqual(rows[1]);
     });
@@ -59,7 +59,7 @@ describe('(Unit) Result Processors', () => {
         { column: 'value2' },
       ];
       // Act
-      const result = pickFirstRow()(rows);
+      const result = pickFirstRecord()(rows);
       // Assert
       expect(result).toEqual(rows[0]);
     });
@@ -68,7 +68,7 @@ describe('(Unit) Result Processors', () => {
       // Arrange
       const rows: QueryResultRow[] = [];
       // Act
-      const result = pickFirstRow()(rows);
+      const result = pickFirstRecord()(rows);
       // Assert
       expect(result).toBeUndefined();
     });

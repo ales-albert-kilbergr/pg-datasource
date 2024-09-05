@@ -110,12 +110,12 @@ export function processResultFlow<ARGS extends object, J>(
   };
 }
 
-export function pickNthRow<R = QueryResultRow>(index: number) {
+export function pickNthRecord<R = QueryResultRow>(index: number) {
   return (rows: R[]): R => rows[index];
 }
 
-export function pickFirstRow<R = QueryResultRow>(): (rows: R[]) => R {
-  return pickNthRow(0);
+export function pickFirstRecord<R = QueryResultRow>(): (rows: R[]) => R {
+  return pickNthRecord(0);
 }
 
 export function transformColumnKeysToCamelCase() {

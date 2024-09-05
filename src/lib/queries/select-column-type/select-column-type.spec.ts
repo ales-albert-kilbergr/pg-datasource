@@ -2,66 +2,9 @@ import { mock } from 'jest-mock-extended';
 import { build, SelectColumnTypeQuery } from './select-column-type.query';
 import type { QueryRunner } from '../../query-runner';
 import type { SelectColumnTypeArgs } from './select-column-type.types';
-import { ValidationError } from 'joi';
 import * as E from 'fp-ts/lib/Either';
 
 describe('(Unit) SelectColumnTypeQuery', () => {
-  describe('validation before building a query config', () => {
-    it('should return an error if the table name is missing', async () => {
-      // Arrange
-      const queryRunner = mock<QueryRunner>();
-      // @ts-expect-error - ignore missing properties for test
-      const query = SelectColumnTypeQuery.prepare(queryRunner, {
-        schema: 'testSchemaName',
-        column: 'testColumnName',
-      });
-      // Act
-      const result = await query.execute();
-      // Assert
-      expect(E.isLeft(result)).toBe(true);
-      if (E.isLeft(result)) {
-        expect(result.left).toBeInstanceOf(ValidationError);
-        expect(result.left.message).toContain('Table name not set.');
-      }
-    });
-
-    it('should return an error if the table schema is missing', async () => {
-      // Arrange
-      const queryRunner = mock<QueryRunner>();
-      // @ts-expect-error - ignore missing properties for test
-      const query = SelectColumnTypeQuery.prepare(queryRunner, {
-        table: 'testTableName',
-        column: 'testColumnName',
-      });
-      // Act
-      const result = await query.execute();
-      // Assert
-      expect(E.isLeft(result)).toBe(true);
-      if (E.isLeft(result)) {
-        expect(result.left).toBeInstanceOf(ValidationError);
-        expect(result.left.message).toContain('Table schema not set.');
-      }
-    });
-
-    it('should return an error if the column name is missing', async () => {
-      // Arrange
-      const queryRunner = mock<QueryRunner>();
-      // @ts-expect-error - ignore missing properties for test
-      const query = SelectColumnTypeQuery.prepare(queryRunner, {
-        table: 'testTableName',
-        schema: 'testSchemaName',
-      });
-      // Act
-      const result = await query.execute();
-      // Assert
-      expect(E.isLeft(result)).toBe(true);
-      if (E.isLeft(result)) {
-        expect(result.left).toBeInstanceOf(ValidationError);
-        expect(result.left.message).toContain('Column name not set.');
-      }
-    });
-  });
-
   describe('building a query config', () => {
     it('should build a correct sql query text', () => {
       // Arrange

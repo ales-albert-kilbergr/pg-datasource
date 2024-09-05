@@ -6,7 +6,11 @@ import {
   type QueryConfig,
 } from '@kilbergr/pg-sql';
 import type { DropSchemaArgs } from './drop-schema.types';
-import { processResultToVoid, SqlStatement } from '../sql-statement';
+import {
+  processResultFlow,
+  reduceToVoid,
+  SqlStatement,
+} from '../sql-statement';
 
 export function build(args: DropSchemaArgs): QueryConfig {
   return sql`
@@ -18,5 +22,5 @@ export function build(args: DropSchemaArgs): QueryConfig {
 
 export const DropSchemaQuery = SqlStatement.create({
   build,
-  processResult: processResultToVoid,
+  processResult: processResultFlow(reduceToVoid()),
 });

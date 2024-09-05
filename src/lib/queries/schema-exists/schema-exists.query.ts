@@ -1,12 +1,13 @@
-import { sql } from '@kilbergr/pg-sql';
+import { type QueryConfig, sql } from '@kilbergr/pg-sql';
 import {
-  processToFirstRowField,
+  pickFirstRow,
+  processResultFlow,
+  reduceToColumn,
   SqlStatement,
-  type SqlQuery,
 } from '../sql-statement';
 import type { SchemaExistsArgs } from './schema-exists.types';
 
-export const build: SqlQuery.QueryConfigBuilder<SchemaExistsArgs> = (args) => {
+export function build(args: SchemaExistsArgs): QueryConfig {
   const queryConfig = sql`
     SELECT EXISTS (
       SELECT 1
@@ -16,9 +17,12 @@ export const build: SqlQuery.QueryConfigBuilder<SchemaExistsArgs> = (args) => {
   `;
 
   return queryConfig;
-};
+}
 
 export const SchemaExistsQuery = SqlStatement.create({
   build,
-  processResult: processToFirstRowField<boolean>('exists'),
+  processResult: processResultFlow(
+    reduceToColumn<boolean>('exists'),
+    pickFirstRow(),
+  ),
 });

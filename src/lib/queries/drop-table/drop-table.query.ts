@@ -5,7 +5,11 @@ import {
   sql,
   type QueryConfig,
 } from '@kilbergr/pg-sql';
-import { processResultToVoid, SqlStatement } from '../sql-statement';
+import {
+  processResultFlow,
+  reduceToVoid,
+  SqlStatement,
+} from '../sql-statement';
 import type { DropTableArgs } from './drop-table.types';
 
 export function build(args: DropTableArgs): QueryConfig {
@@ -18,5 +22,5 @@ export function build(args: DropTableArgs): QueryConfig {
 
 export const DropTableQuery = SqlStatement.create({
   build,
-  processResult: processResultToVoid,
+  processResult: processResultFlow(reduceToVoid()),
 });

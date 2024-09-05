@@ -8,7 +8,7 @@ describe('(Unit) SchemaExistsQuery', () => {
     it('should build a correct sql query text with just a schema', () => {
       // Arrange
       const args = {
-        schemaName: 'testSchemaName',
+        schema: 'testSchemaName',
       };
       // Act
       const result = build(args);
@@ -31,7 +31,7 @@ describe('(Unit) SchemaExistsQuery', () => {
         rows: [{ exists: true }],
       });
       const query = SchemaExistsQuery.prepare(queryRunner, {
-        schemaName: 'public',
+        schema: 'public',
       });
       queryRunner.query.mockResolvedValueOnce(E.right(queryResult));
       // Act
@@ -50,7 +50,7 @@ describe('(Unit) SchemaExistsQuery', () => {
         rows: [{ exists: false }],
       });
       const query = SchemaExistsQuery.prepare(queryRunner, {
-        schemaName: 'nonExistentSchema',
+        schema: 'nonExistentSchema',
       });
       queryRunner.query.mockResolvedValueOnce(E.right(queryResult));
       // Act

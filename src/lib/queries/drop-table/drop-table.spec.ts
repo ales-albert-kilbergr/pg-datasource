@@ -6,8 +6,8 @@ describe('(Unit) DropTableQuery', () => {
     it('should build a correct sql query text with just a table and schema', () => {
       // Arrange
       const args: DropTableArgs = {
-        tableName: 'testTableName',
-        tableSchema: 'testSchemaName',
+        table: 'testTableName',
+        schema: 'testSchemaName',
       };
       // Act
       const result = build(args);
@@ -21,8 +21,8 @@ describe('(Unit) DropTableQuery', () => {
     it('should build a correct sql query with if exists flag', () => {
       // Arrange
       const args: DropTableArgs = {
-        tableName: 'testTableName',
-        tableSchema: 'testSchemaName',
+        table: 'testTableName',
+        schema: 'testSchemaName',
         ifExists: true,
       };
       // Act
@@ -37,8 +37,8 @@ describe('(Unit) DropTableQuery', () => {
     it('should build a correct sql query with cascade flag', () => {
       // Arrange
       const args: DropTableArgs = {
-        tableName: 'testTableName',
-        tableSchema: 'testSchemaName',
+        table: 'testTableName',
+        schema: 'testSchemaName',
         cascade: true,
       };
       // Act

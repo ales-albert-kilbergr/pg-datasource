@@ -1,6 +1,6 @@
 export interface TableExistsArgs {
-  tableName: string;
-  tableSchema: string;
+  table: string;
+  schema: string;
 }
 
 export type TableExistsResult = boolean;

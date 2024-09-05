@@ -11,7 +11,7 @@ import { processResultToVoid, SqlStatement } from '../sql-statement';
 export function build(args: DropSchemaArgs): QueryConfig {
   return sql`
     DROP SCHEMA ${IfExists(args.ifExists)} 
-      ${Identifier(args.schemaName)}
+      ${Identifier(args.schema)}
       ${Cascade(args.cascade)};
   `;
 }

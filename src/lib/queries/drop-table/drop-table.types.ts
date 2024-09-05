@@ -1,6 +1,6 @@
 export interface DropTableArgs {
-  tableName: string;
-  tableSchema: string;
+  table: string;
+  schema: string;
   cascade?: boolean;
   ifExists?: boolean;
 }

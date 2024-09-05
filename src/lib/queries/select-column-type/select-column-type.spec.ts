@@ -12,8 +12,8 @@ describe('(Unit) SelectColumnTypeQuery', () => {
       const queryRunner = mock<QueryRunner>();
       // @ts-expect-error - ignore missing properties for test
       const query = SelectColumnTypeQuery.prepare(queryRunner, {
-        tableSchema: 'testSchemaName',
-        columnName: 'testColumnName',
+        schema: 'testSchemaName',
+        column: 'testColumnName',
       });
       // Act
       const result = await query.execute();
@@ -30,8 +30,8 @@ describe('(Unit) SelectColumnTypeQuery', () => {
       const queryRunner = mock<QueryRunner>();
       // @ts-expect-error - ignore missing properties for test
       const query = SelectColumnTypeQuery.prepare(queryRunner, {
-        tableName: 'testTableName',
-        columnName: 'testColumnName',
+        table: 'testTableName',
+        column: 'testColumnName',
       });
       // Act
       const result = await query.execute();
@@ -48,8 +48,8 @@ describe('(Unit) SelectColumnTypeQuery', () => {
       const queryRunner = mock<QueryRunner>();
       // @ts-expect-error - ignore missing properties for test
       const query = SelectColumnTypeQuery.prepare(queryRunner, {
-        tableName: 'testTableName',
-        tableSchema: 'testSchemaName',
+        table: 'testTableName',
+        schema: 'testSchemaName',
       });
       // Act
       const result = await query.execute();
@@ -66,9 +66,9 @@ describe('(Unit) SelectColumnTypeQuery', () => {
     it('should build a correct sql query text', () => {
       // Arrange
       const args: SelectColumnTypeArgs = {
-        tableSchema: 'testSchemaName',
-        tableName: 'testTableName',
-        columnName: 'testColumnName',
+        schema: 'testSchemaName',
+        table: 'testTableName',
+        column: 'testColumnName',
       };
       // Act
       const result = build(args);
@@ -89,9 +89,9 @@ describe('(Unit) SelectColumnTypeQuery', () => {
       });
       queryRunner.query.mockResolvedValue(E.right(queryResult));
       const query = SelectColumnTypeQuery.prepare(queryRunner, {
-        tableSchema: 'testSchemaName',
-        tableName: 'testTableName',
-        columnName: 'testColumnName',
+        schema: 'testSchemaName',
+        table: 'testTableName',
+        column: 'testColumnName',
       });
       // Act
       const result = await query.execute();

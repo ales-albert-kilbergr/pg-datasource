@@ -12,8 +12,8 @@ export const build: SqlQuery.QueryConfigBuilder<TableExistsArgs> = (args) => {
     SELECT EXISTS (
       SELECT 1
       FROM information_schema.tables
-      WHERE table_schema = :${args.tableSchema}
-      AND table_name = :${args.tableName}
+      WHERE table_schema = :${args.schema}
+      AND table_name = :${args.table}
     ) as "exists";
   `;
 
@@ -24,12 +24,12 @@ const COMMON_MESSAGE_PREFIX =
   'Statement "TableExistsQuery" failed to prepare query for checking if a table exists.';
 
 const argsSchema = Joi.object<TableExistsArgs>({
-  tableName: Joi.string()
+  table: Joi.string()
     .required()
     .messages({
       'any.required': `${COMMON_MESSAGE_PREFIX} Table name not set.`,
     }),
-  tableSchema: Joi.string()
+  schema: Joi.string()
     .required()
     .messages({
       'any.required': `${COMMON_MESSAGE_PREFIX} Table schema not set.`,

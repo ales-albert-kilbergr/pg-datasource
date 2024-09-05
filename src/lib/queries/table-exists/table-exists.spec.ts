@@ -11,7 +11,7 @@ describe('(Unit) TableExistsQuery', () => {
       const queryRunner = mock<QueryRunner>();
       // @ts-expect-error - ignore missing properties for test
       const query = TableExistsQuery.prepare(queryRunner, {
-        tableSchema: 'testSchemaName',
+        schema: 'testSchemaName',
       });
       // Act
       const result = await query.execute();
@@ -28,7 +28,7 @@ describe('(Unit) TableExistsQuery', () => {
       const queryRunner = mock<QueryRunner>();
       // @ts-expect-error - ignore missing properties for test
       const query = TableExistsQuery.prepare(queryRunner, {
-        tableName: 'testTableName',
+        table: 'testTableName',
       });
       // Act
       const result = await query.execute();
@@ -45,8 +45,8 @@ describe('(Unit) TableExistsQuery', () => {
     it('should build a correct sql query text with just a table and schema', () => {
       // Arrange
       const args = {
-        tableName: 'testTableName',
-        tableSchema: 'testSchemaName',
+        table: 'testTableName',
+        schema: 'testSchemaName',
       };
       // Act
       const result = build(args);
@@ -70,8 +70,8 @@ describe('(Unit) TableExistsQuery', () => {
       const queryRunner = mock<QueryRunner>();
       queryRunner.query.mockResolvedValue(E.right(queryResult));
       const query = TableExistsQuery.prepare(queryRunner, {
-        tableName: 'testTableName',
-        tableSchema: 'testSchemaName',
+        table: 'testTableName',
+        schema: 'testSchemaName',
       });
       // Act
       const result = await query.execute();
@@ -90,8 +90,8 @@ describe('(Unit) TableExistsQuery', () => {
       const queryRunner = mock<QueryRunner>();
       queryRunner.query.mockResolvedValue(E.right(queryResult));
       const query = TableExistsQuery.prepare(queryRunner, {
-        tableName: 'testTableName',
-        tableSchema: 'testSchemaName',
+        table: 'testTableName',
+        schema: 'testSchemaName',
       });
       // Act
       const result = await query.execute();

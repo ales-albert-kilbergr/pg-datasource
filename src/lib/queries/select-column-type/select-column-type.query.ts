@@ -13,9 +13,9 @@ export const build: SqlQuery.QueryConfigBuilder<SelectColumnTypeArgs> =
     return sql`
     SELECT data_type 
     FROM information_schema.columns WHERE 
-      table_schema = :${args.tableSchema} AND
-      table_name = :${args.tableName} AND 
-      column_name = :${args.columnName};
+      table_schema = :${args.schema} AND
+      table_name = :${args.table} AND 
+      column_name = :${args.column};
   `;
   };
 
@@ -24,17 +24,17 @@ const COMMON_MESSAGE_PREFIX =
   'for column data type.';
 
 const argsSchema = Joi.object<SelectColumnTypeArgs>({
-  tableName: Joi.string()
+  table: Joi.string()
     .required()
     .messages({
       'any.required': `${COMMON_MESSAGE_PREFIX} Table name not set.`,
     }),
-  tableSchema: Joi.string()
+  schema: Joi.string()
     .required()
     .messages({
       'any.required': `${COMMON_MESSAGE_PREFIX} Table schema not set.`,
     }),
-  columnName: Joi.string()
+  column: Joi.string()
     .required()
     .messages({
       'any.required': `${COMMON_MESSAGE_PREFIX} Column name not set.`,

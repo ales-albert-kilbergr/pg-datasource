@@ -1,5 +1,5 @@
 export interface DropSchemaArgs {
-  schemaName: string;
+  schema: string;
   ifExists?: boolean;
   cascade?: boolean;
 }

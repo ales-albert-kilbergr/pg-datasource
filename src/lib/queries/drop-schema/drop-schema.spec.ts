@@ -8,7 +8,7 @@ describe('(Unit) DropSchemaQuery', () => {
     it('should build a correct sql query text with just a schema', () => {
       // Arrange
       const args = {
-        schemaName: 'testSchemaName',
+        schema: 'testSchemaName',
       };
       // Act
       const result = build(args);
@@ -22,7 +22,7 @@ describe('(Unit) DropSchemaQuery', () => {
     it('should build a correct sql query with if exists flag', () => {
       // Arrange
       const args = {
-        schemaName: 'testSchemaName',
+        schema: 'testSchemaName',
         ifExists: true,
       };
       // Act
@@ -37,7 +37,7 @@ describe('(Unit) DropSchemaQuery', () => {
     it('should build a correct sql query with cascade flag', () => {
       // Arrange
       const args = {
-        schemaName: 'testSchemaName',
+        schema: 'testSchemaName',
         cascade: true,
       };
       // Act
@@ -56,7 +56,7 @@ describe('(Unit) DropSchemaQuery', () => {
       const queryRunner = mock<QueryRunner>();
       const queryResult = mock<QueryRunner.Result>();
       const query = DropSchemaQuery.prepare(queryRunner, {
-        schemaName: 'testSchemaName',
+        schema: 'testSchemaName',
       });
       queryRunner.query.mockResolvedValueOnce(E.right(queryResult));
       // Act

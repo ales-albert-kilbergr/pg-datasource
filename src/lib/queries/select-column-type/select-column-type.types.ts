@@ -1,7 +1,7 @@
 export interface SelectColumnTypeArgs {
-  tableName: string;
-  tableSchema: string;
-  columnName: string;
+  table: string;
+  schema: string;
+  column: string;
 }
 
 export type SelectColumnTypeResult = string | undefined;

@@ -1,5 +1,5 @@
 export interface SchemaExistsArgs {
-  schemaName: string;
+  schema: string;
 }
 
 export type SchemaExistsResult = boolean;

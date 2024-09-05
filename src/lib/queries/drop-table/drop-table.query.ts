@@ -11,7 +11,7 @@ import type { DropTableArgs } from './drop-table.types';
 export function build(args: DropTableArgs): QueryConfig {
   return sql`
     DROP TABLE ${IfExists(args.ifExists)} 
-      ${Identifier(`${args.tableSchema}.${args.tableName}`)}
+      ${Identifier(`${args.schema}.${args.table}`)}
       ${Cascade(args.cascade)};
   `;
 }

@@ -11,7 +11,7 @@ export const build: SqlQuery.QueryConfigBuilder<SchemaExistsArgs> = (args) => {
     SELECT EXISTS (
       SELECT 1
       FROM information_schema.schemata
-      WHERE schema_name = :${args.schemaName}
+      WHERE schema_name = :${args.schema}
     ) as "exists";
   `;
 

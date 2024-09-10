@@ -30,7 +30,7 @@ describe('(Unit) SchemaExistsQuery', () => {
       const queryResult = mock<QueryRunner.Result>({
         rows: [{ exists: true }],
       });
-      const query = SchemaExistsQuery.prepare(queryRunner, {
+      const query = SchemaExistsQuery.prepare(queryRunner).setArgs({
         schema: 'public',
       });
       queryRunner.query.mockResolvedValueOnce(E.right(queryResult));
@@ -49,7 +49,7 @@ describe('(Unit) SchemaExistsQuery', () => {
       const queryResult = mock<QueryRunner.Result>({
         rows: [{ exists: false }],
       });
-      const query = SchemaExistsQuery.prepare(queryRunner, {
+      const query = SchemaExistsQuery.prepare(queryRunner).setArgs({
         schema: 'nonExistentSchema',
       });
       queryRunner.query.mockResolvedValueOnce(E.right(queryResult));

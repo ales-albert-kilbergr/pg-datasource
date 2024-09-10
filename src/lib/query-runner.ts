@@ -7,7 +7,6 @@ import {
 } from 'pg';
 import { QueryConfig } from '@kilbergr/pg-sql';
 import { TransactionRunner } from './transaction-runner';
-import type { Class } from 'type-fest';
 import * as E from 'fp-ts/lib/Either';
 import type { SqlQuery, SqlStatement } from './queries';
 
@@ -60,10 +59,6 @@ export class QueryRunner {
     return Number((process.hrtime.bigint() - startTime) / BigInt(1e6));
   }
 
-  public createRepository<R, C>(repositoryClass: Class<R>, config?: C): R {
-    return new repositoryClass(this, config);
-  }
-
   public isInTransaction(): boolean {
     return !!this.transaction;
   }
@@ -114,9 +109,8 @@ export class QueryRunner {
     PROCESSED_ERROR = DatabaseError,
   >(
     statement: SqlStatement<ARGS, RESULT, PROCESSED_ERROR>,
-    args: ARGS,
   ): SqlQuery<ARGS, RESULT, PROCESSED_ERROR> {
-    return statement.prepare(this, args);
+    return statement.prepare(this);
   }
 
   public async query<R extends QueryResultRow>(

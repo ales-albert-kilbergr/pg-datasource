@@ -32,7 +32,7 @@ describe('(Unit) TableExistsQuery', () => {
       });
       const queryRunner = mock<QueryRunner>();
       queryRunner.query.mockResolvedValue(E.right(queryResult));
-      const query = TableExistsQuery.prepare(queryRunner, {
+      const query = TableExistsQuery.prepare(queryRunner).setArgs({
         table: 'testTableName',
         schema: 'testSchemaName',
       });
@@ -52,7 +52,7 @@ describe('(Unit) TableExistsQuery', () => {
       });
       const queryRunner = mock<QueryRunner>();
       queryRunner.query.mockResolvedValue(E.right(queryResult));
-      const query = TableExistsQuery.prepare(queryRunner, {
+      const query = TableExistsQuery.prepare(queryRunner).setArgs({
         table: 'testTableName',
         schema: 'testSchemaName',
       });

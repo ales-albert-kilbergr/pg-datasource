@@ -55,7 +55,7 @@ describe('(Unit) DropSchemaQuery', () => {
       // Arrange
       const queryRunner = mock<QueryRunner>();
       const queryResult = mock<QueryRunner.Result>();
-      const query = DropSchemaQuery.prepare(queryRunner, {
+      const query = DropSchemaQuery.prepare(queryRunner).setArgs({
         schema: 'testSchemaName',
       });
       queryRunner.query.mockResolvedValueOnce(E.right(queryResult));

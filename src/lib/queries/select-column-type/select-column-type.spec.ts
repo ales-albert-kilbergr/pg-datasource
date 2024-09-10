@@ -31,7 +31,7 @@ describe('(Unit) SelectColumnTypeQuery', () => {
         rows: [{ data_type: 'testDataType' }],
       });
       queryRunner.query.mockResolvedValue(E.right(queryResult));
-      const query = SelectColumnTypeQuery.prepare(queryRunner, {
+      const query = SelectColumnTypeQuery.prepare(queryRunner).setArgs({
         schema: 'testSchemaName',
         table: 'testTableName',
         column: 'testColumnName',

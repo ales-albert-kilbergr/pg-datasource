@@ -43,12 +43,11 @@ export class SqlStatement<
 
   public prepare(
     queryRunner: QueryRunner,
-    args: ARGS,
   ): SqlQuery<ARGS, RESULT, PROCESSED_ERROR> {
     const query = new SqlQuery<ARGS, RESULT, PROCESSED_ERROR>(
       queryRunner,
       this.options,
-    ).setArgs(args);
+    );
 
     return query;
   }

@@ -5,6 +5,7 @@ import { DatabaseError, type Pool, type PoolClient } from 'pg';
 import { QueryConfig, sql } from '@kilbergr/pg-sql';
 import type { TransactionRunner } from './transaction-runner';
 import * as E from 'fp-ts/lib/Either';
+import { SqlQuery, SqlStatement } from './queries';
 
 describe('(Unit) QueryRunner', () => {
   describe('.getDurationInMilliseconds()', () => {
@@ -526,45 +527,20 @@ describe('(Unit) QueryRunner', () => {
     });
   });
 
-  describe('#createRepository', () => {
-    it('should return a new repository with a query runner within', () => {
+  describe('#prepare()', () => {
+    it('should return a prepared query', () => {
       // Arrange
       const queryRunner = new QueryRunner(
         mock<Pool>(),
         mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
-      class MyRepository {
-        public queryRunner: QueryRunner;
-
-        public constructor(_queryRunner: QueryRunner) {
-          this.queryRunner = _queryRunner;
-        }
-      }
+      const statement = SqlStatement.create({
+        build: () => sql`SELECT 1`,
+      });
       // Act
-      const result = queryRunner.createRepository(MyRepository);
+      const result = queryRunner.prepare(statement);
       // Assert
-      expect(result).toBeInstanceOf(MyRepository);
-      expect(result.queryRunner).toBe(queryRunner);
-    });
-
-    it('should add custom configuration to the repository', () => {
-      // Arrange
-      const queryRunner = new QueryRunner(
-        mock<Pool>(),
-        mock<QueryRunner.Logger & TransactionRunner.Logger>(),
-      );
-      class MyRepository {
-        public config: string;
-
-        public constructor(_queryRunner: QueryRunner, _config: string) {
-          this.config = _config;
-        }
-      }
-      // Act
-      const result = queryRunner.createRepository(MyRepository, 'test');
-      // Assert
-      expect(result).toBeInstanceOf(MyRepository);
-      expect(result.config).toBe('test');
+      expect(result).toBeInstanceOf(SqlQuery);
     });
   });
 });

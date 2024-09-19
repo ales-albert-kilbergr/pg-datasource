@@ -783,7 +783,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@kilbergr/pg-datasource@workspace:."
   dependencies:
-    "@kilbergr/pg-sql": "npm:^0.1.0-Dev.18"
+    "@kilbergr/pg-sql": "npm:^0.1.0-Dev.19"
     "@kilbergr/string": "npm:^0.1.0-Dev.1"
     "@kilbergr/tagged-types": "npm:^0.1.0-Alpha.3"
     "@types/jest": "npm:^29.5.12"
@@ -814,13 +814,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@kilbergr/pg-sql@npm:^0.1.0-Dev.18":
-  version: 0.1.0-Dev.18
-  resolution: "@kilbergr/pg-sql@npm:0.1.0-Dev.18"
+"@kilbergr/pg-sql@npm:^0.1.0-Dev.19":
+  version: 0.1.0-Dev.19
+  resolution: "@kilbergr/pg-sql@npm:0.1.0-Dev.19"
   peerDependencies:
     "@kilbergr/tagged-types": ^0.1.0-Alpha.3
     pg: ^8.12.0
-  checksum: 10/71929ccf689c25c4977696ea71da771faabd8580ab3a8dc00c8b1914508aed750d1dc2014f47e3350817d184a56681739f7e01ddefb4b24e6f422ee150f70a3d
+  checksum: 10/8890d06ae919070bf51cee8afe6d112e0bb32b7e2692c15adb8ff9d356759b779186c8bb75186472805944b16bab39f0f9320086fe619b98a4eb507e7cc370ff
   languageName: node
   linkType: hard
 

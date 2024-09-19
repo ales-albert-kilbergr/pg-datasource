@@ -5,7 +5,7 @@ import { DatabaseError, type Pool, type PoolClient } from 'pg';
 import { QueryConfig, sql } from '@kilbergr/pg-sql';
 import type { TransactionRunner } from './transaction-runner';
 import * as E from 'fp-ts/lib/Either';
-import { SqlQuery, SqlStatement } from './queries';
+import { SqlQuery, SqlStatement } from './statements';
 
 describe('(Unit) QueryRunner', () => {
   describe('.getDurationInMilliseconds()', () => {
@@ -534,9 +534,7 @@ describe('(Unit) QueryRunner', () => {
         mock<Pool>(),
         mock<QueryRunner.Logger & TransactionRunner.Logger>(),
       );
-      const statement = SqlStatement.create({
-        build: () => sql`SELECT 1`,
-      });
+      const statement = SqlStatement.from(() => sql`SELECT 1`);
       // Act
       const result = queryRunner.prepare(statement);
       // Assert

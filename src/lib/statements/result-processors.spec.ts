@@ -9,7 +9,7 @@ import {
   transformRowToInstance,
 } from './result-processors';
 import { mock } from 'jest-mock-extended';
-import type { QueryRunner } from '../../query-runner';
+import type { QueryRunner } from '../query-runner';
 import type { SqlQuery } from './sql-query';
 
 describe('(Unit) Result Processors', () => {

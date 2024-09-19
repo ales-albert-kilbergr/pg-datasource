@@ -1,5 +1,5 @@
 import type { QueryConfig } from '@kilbergr/pg-sql';
-import type { QueryRunner } from '../../query-runner';
+import type { QueryRunner } from '../query-runner';
 import type { ValidationError, ObjectSchema } from 'joi';
 import * as E from 'fp-ts/lib/Either';
 import type { DatabaseError } from 'pg';

@@ -8,7 +8,7 @@ import {
 import { QueryConfig } from '@kilbergr/pg-sql';
 import { TransactionRunner } from './transaction-runner';
 import * as E from 'fp-ts/lib/Either';
-import type { SqlQuery, SqlStatement } from './queries';
+import type { SqlQuery, SqlStatement } from './statements';
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export declare namespace QueryRunner {

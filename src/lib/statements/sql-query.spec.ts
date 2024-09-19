@@ -1,6 +1,6 @@
 import { mock } from 'jest-mock-extended';
 import { SqlQuery } from './sql-query';
-import type { QueryRunner } from '../../query-runner';
+import type { QueryRunner } from '../query-runner';
 import { type QueryConfig, sql } from '@kilbergr/pg-sql';
 import * as E from 'fp-ts/lib/Either';
 import { DatabaseError } from 'pg';

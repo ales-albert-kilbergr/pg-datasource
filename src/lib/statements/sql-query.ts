@@ -82,6 +82,10 @@ export class SqlQuery<
     return this.args[key];
   }
 
+  public getQueryConfig(): QueryConfig {
+    return this.options.build(this.args);
+  }
+
   public async execute(): Promise<
     E.Either<DatabaseError | ValidationError | PROCESSED_ERROR, RESULT>
   > {

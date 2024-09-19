@@ -9,23 +9,23 @@ import {
 import { SqlStatement } from './sql-statement';
 import { pickFirstRecord, reduceToColumn } from './result-processors';
 
-export const CreateSchemaQuery =
+export const CreateSchemaStatement =
   SqlStatement.from(CreateSchema).processResultToVoid();
 
-export const DropSchemaQuery =
+export const DropSchemaStatement =
   SqlStatement.from(DropSchema).processResultToVoid();
 
-export const DropTableQuery =
+export const DropTableStatement =
   SqlStatement.from(DropTable).processResultToVoid();
 
-export const SchemaExistsQuery = SqlStatement.from(
+export const SchemaExistsStatement = SqlStatement.from(
   SchemaExists,
 ).processResultFlow(reduceToColumn<boolean>('exists'), pickFirstRecord());
 
-export const SelectColumnTypeQuery = SqlStatement.from(
+export const SelectColumnTypeStatement = SqlStatement.from(
   SelectColumnType,
 ).processResultFlow(reduceToColumn<string>('data_type'), pickFirstRecord());
 
-export const TableExistsQuery = SqlStatement.from(
+export const TableExistsStatement = SqlStatement.from(
   TableExists,
 ).processResultFlow(reduceToColumn<boolean>('exists'), pickFirstRecord());

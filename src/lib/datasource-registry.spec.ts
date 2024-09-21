@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import type { Datasource } from './datasource';
 import { DatasourceRegistry } from './datasource-registry';
 import { mock } from 'jest-mock-extended';
@@ -91,6 +93,34 @@ describe('(Unit) Datasource Registry', () => {
       const result = registry.delete('test');
       // Assert
       expect(result).toBe(false);
+    });
+  });
+
+  describe('count', () => {
+    it('should return the number of datasources', () => {
+      // Arrange
+      const registry = new DatasourceRegistry();
+      const datasource1 = mock<Datasource>({ name: 'test1' });
+      const datasource2 = mock<Datasource>({ name: 'test2' });
+      // Act
+      registry.register(datasource1, datasource2);
+      // Assert
+      expect(registry.count()).toBe(2);
+    });
+  });
+
+  describe('destroyAll', () => {
+    it('should destroy all datasources', async () => {
+      // Arrange
+      const registry = new DatasourceRegistry();
+      const datasource1 = mock<Datasource>({ name: 'test1' });
+      const datasource2 = mock<Datasource>({ name: 'test2' });
+      // Act
+      registry.register(datasource1, datasource2);
+      await registry.destroyAll();
+      // Assert
+      expect(datasource1.destroy).toHaveBeenCalled();
+      expect(datasource2.destroy).toHaveBeenCalled();
     });
   });
 });

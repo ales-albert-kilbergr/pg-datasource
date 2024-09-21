@@ -1,6 +1,5 @@
 import type { Pool } from 'pg';
 import { QueryRunner } from './query-runner';
-import { sql } from '@kilbergr/pg-sql';
 import { AdvisoryLock } from './advisory-lock';
 import type { TransactionRunner } from './transaction-runner';
 
@@ -51,38 +50,6 @@ export class Datasource {
    */
   public async destroy(): Promise<void> {
     await this.pool.end();
-  }
-
-  public async schemaExists(schemaName: string): Promise<boolean> {
-    const query = sql`
-      SELECT EXISTS (
-        SELECT 1
-        FROM information_schema.schemata
-        WHERE schema_name = :${schemaName}
-      ) AS exists;
-    `;
-
-    const result = await this.pool.query(query);
-
-    return result.rows[0].exists === true;
-  }
-
-  public async tableExists(
-    schemaName: string,
-    tableName: string,
-  ): Promise<boolean> {
-    const query = sql`
-      SELECT EXISTS (
-        SELECT 1
-        FROM information_schema.tables
-        WHERE table_schema = :${schemaName}
-        AND table_name = :${tableName}
-      ) AS exists;
-    `;
-
-    const result = await this.pool.query(query);
-
-    return result.rows[0].exists === true;
   }
 
   public createAdvisorLock(lockId: number): AdvisoryLock {

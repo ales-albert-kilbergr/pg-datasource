@@ -7,7 +7,7 @@ import {
   TableExists,
 } from '@kilbergr/pg-sql';
 import { SqlStatement } from './sql-statement';
-import { pickFirstRecord, reduceToColumn } from './result-processors';
+import { pickFirstRecord, mapToColumn } from '../data-processors';
 
 export const CreateSchemaStatement =
   SqlStatement.from(CreateSchema).processResultToVoid();
@@ -20,12 +20,12 @@ export const DropTableStatement =
 
 export const SchemaExistsStatement = SqlStatement.from(
   SchemaExists,
-).processResultFlow(reduceToColumn<boolean>('exists'), pickFirstRecord());
+).processDataFlow(mapToColumn<boolean>('exists'), pickFirstRecord());
 
 export const SelectColumnTypeStatement = SqlStatement.from(
   SelectColumnType,
-).processResultFlow(reduceToColumn<string>('data_type'), pickFirstRecord());
+).processDataFlow(mapToColumn<string>('data_type'), pickFirstRecord());
 
 export const TableExistsStatement = SqlStatement.from(
   TableExists,
-).processResultFlow(reduceToColumn<boolean>('exists'), pickFirstRecord());
+).processDataFlow(mapToColumn<boolean>('exists'), pickFirstRecord());
